@@ -1,0 +1,67 @@
+version: '2'
+# start by cleaning up old containers since logger will conflict
+# docker-compose rm -f;docker-compose up
+services:
+
+  #
+  # engine-manager
+  media:
+    #build: .
+    image: "veritone/stream-engine-manager:test"
+
+    ports:
+      - "8000:8000"
+      - "30000:30000"
+
+    entrypoint: /app/app
+
+    environment:
+      API_TOKEN: ${VERITONE_API_TOKEN}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      CONFIG_PATH: "http://binaries-lb.aws-dev-rt.veritone.com/conf/aws-dev-rt/base.json"
+
+  #    logging:
+  #      driver: syslog
+  #      options:
+  #        syslog-address: "tcp://127.0.0.1:514"
+  #        tag: "engine-manager"
+
+  zoo1:
+    image: zookeeper:3.4.9
+    restart: unless-stopped
+    hostname: zoo1
+    ports:
+      - "2181:2181"
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_PORT: 2181
+      ZOO_SERVERS: server.1=zoo1:2888:3888
+    volumes:
+      - ./full-stack/zoo1/data:/data
+      - ./full-stack/zoo1/datalog:/datalog
+  kafka1:
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka1
+    ports:
+      - "9092:9092"
+      - "1099"
+    environment:
+      # add the entry "127.0.0.1    kafka1" to your /etc/hosts file
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka1:9092"
+      KAFKA_ZOOKEEPER_CONNECT: "zoo1:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=kafka1 -Dcom.sun.management.jmxremote.rmi.port=1099"
+      JMX_PORT: 1099
+    volumes:
+      - ./full-stack/kafka1/data:/var/lib/kafka/data
+    depends_on:
+      - zoo1
+
+  redis:
+    image: redis:alpine
+    hostname: redis
+    ports:
+      - "6379:6379"

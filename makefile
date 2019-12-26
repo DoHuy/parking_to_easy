@@ -1,5 +1,3 @@
-# arr trong golang arr vd: [7]string{"asd", "asdas", "asd", "asdas", "asda", "asdad", "asdsad"}
-
 # BINARY_NAME defaults to the name of the repository
 BINARY_NAME := parking_service
 BUILD_INFO_FLAGS := -X main.BuildTime=$(shell date -u '+%Y-%m-%d_%H:%M:%S') -X main.BuildCommitHash=$(shell git rev-parse HEAD)
@@ -65,13 +63,3 @@ generate-deps:
 test:
 	# Run all tests, with coverage (excluding vendored packages)
 	go test -a -v -cover $(LIST_NO_VENDOR)
-
-.PHONY: test.osx
-test.osx:
-	# Run all tests, with coverage (excluding vendored packages)
-	go test -a -v -cover $(LIST_NO_VENDOR) -ldflags "$(OSX_BUILD_FLAGS)"
-
-.PHONY: test.nocover
-test.nocover:
-	# Run all tests (excluding vendored packages)
-	go test -a -v $(LIST_NO_VENDOR)

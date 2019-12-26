@@ -1,0 +1,225 @@
+vendors:
+  - path: github.com/Azure/go-ansiterm
+    rev: d6e3b3328b783f23731bc4d058875b0371ff8109
+  - path: github.com/Microsoft/go-winio
+    rev: 97e4973ce50b2ff5f09635a57e2b88a037aae829
+  - path: github.com/Nvveen/Gotty
+    rev: cd527374f1e5bff4938207604a14f2e38a9cf512
+  - path: github.com/Shopify/sarama
+    rev: 647feef69a1a7e0e23cccceeb786176bc4fcf5ea
+  - path: github.com/Shopify/toxiproxy
+    rev: 0b4f0a7eb0cfe79bc83ccbaca6d78172c9bcfc9b
+  - path: github.com/armon/go-metrics
+    rev: 783273d703149aaeb9897cf58613d5af48861c25
+  - path: github.com/aws/aws-sdk-go
+    rev: 64fc3d5c40fffc817c1cc1c1d89a6e482bf1120d
+  - path: github.com/beorn7/perks
+    rev: 3a771d992973f24aa725d07868b467d1ddfceafb
+  - path: github.com/bsm/sarama-cluster
+    rev: d98592677c0aa08d8aafb882d344fb461682b722
+  - path: github.com/codahale/hdrhistogram
+    rev: 3a0bb77429bd3a61596f5e8a3172445844342120
+  - path: github.com/davecgh/go-spew
+    rev: 8991bc29aa16c548c550c7ff78260e27b9ab7c73
+  - path: github.com/docker/distribution
+    rev: 749f6afb4572201e3c37325d0ffedb6f32be8950
+  - path: github.com/docker/docker
+    rev: 56b14b8c259640e570becfaffa7aeb3209239991
+  - path: github.com/docker/go-connections
+    rev: 7395e3f8aa162843a74ed6d48e79627d9792ac55
+  - path: github.com/docker/go-units
+    rev: 2fb04c6466a548a03cb009c5569ee1ab1e35398e
+  - path: github.com/eapache/go-resiliency
+    rev: ea41b0fad31007accc7f806884dcdf3da98b79ce
+  - path: github.com/eapache/go-xerial-snappy
+    rev: bb955e01b9346ac19dc29eb16586c90ded99a98c
+  - path: github.com/eapache/queue
+    rev: 093482f3f8ce946c05bcba64badd2c82369e084d
+  - path: github.com/fuzzdota/wfi
+    rev: 6bde951eb092fd56296f82a90a170ce72e31007c
+  - path: github.com/go-ini/ini
+    rev: 6ecc596bd756a16c6e93e4ef9225ecdb9f54ed2c
+  - path: github.com/go-redis/redis
+    rev: 1d1269e0cf72355a7731eb8aea9ecf3192266bb2
+  - path: github.com/gogo/protobuf
+    rev: 07eab6a8298cf32fac45cceaac59424f98421bbc
+  - path: github.com/golang/glog
+    rev: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
+  - path: github.com/golang/mock
+    rev: 58cd061d09382b6011f84c1291ebe50ef2e25bab
+  - path: github.com/golang/protobuf
+    rev: b27b920f9e71b439b873b17bf99f56467623814a
+  - path: github.com/golang/snappy
+    rev: 553a641470496b2327abcac10b36396bd98e45c9
+  - path: github.com/google/go-cmp
+    rev: 2248b49eaa8e1c8c0963ee77b40841adbc19d4ca
+  - path: github.com/gopherjs/gopherjs
+    rev: 82b322028c96512b15077093b16a5f1c7ea897ac
+  - path: github.com/gorilla/context
+    rev: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
+  - path: github.com/gorilla/mux
+    rev: 4dbd923b0c9e99ff63ad54b0e9705ff92d3cdb06
+  - path: github.com/hashicorp/consul
+    rev: 3086b3b63828b1946f3533777cac72212d483834
+  - path: github.com/hashicorp/errwrap
+    rev: 7554cd9344cec97297fa6649b055a8c98c2a1e55
+  - path: github.com/hashicorp/go-cleanhttp
+    rev: d5fe4b57a186c716b0e00b8c301cbd9b4182694d
+  - path: github.com/hashicorp/go-immutable-radix
+    rev: 7f3cd4390caab3250a57f30efdb2a65dd7649ecf
+  - path: github.com/hashicorp/go-msgpack
+    rev: fa3f63826f7c23912c15263591e65d54d080b458
+  - path: github.com/hashicorp/go-multierror
+    rev: b7773ae218740a7be65057fc60b366a49b538a44
+  - path: github.com/hashicorp/go-rootcerts
+    rev: 6bb64b370b90e7ef1fa532be9e591a81c3493e00
+  - path: github.com/hashicorp/go-sockaddr
+    rev: 6d291a969b86c4b633730bfc6b8b9d64c3aafed9
+  - path: github.com/hashicorp/go-uuid
+    rev: 27454136f0364f2d44b1276c552d69105cf8c498
+  - path: github.com/hashicorp/golang-lru
+    rev: 0fb14efe8c47ae851c0034ed7a448854d3d34cf3
+  - path: github.com/hashicorp/memberlist
+    rev: 2288bf30e9c8d7b5f6549bf62e07120d72fd4b6c
+  - path: github.com/hashicorp/serf
+    rev: 3b250ce4404edb266330f53fcfc8ad0d0dacfae7
+  - path: github.com/hashicorp/yamux
+    rev: 2658be15c5f05e76244154714161f17e3e77de2e
+  - path: github.com/inconshreveable/mousetrap
+    rev: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+  - path: github.com/ivpusic/grpool
+    rev: 28957a27c9441f178d644aa598bac0aad4dd7bba
+  - path: github.com/jmespath/go-jmespath
+    rev: c2b33e8439af944379acbdd9c3a5fe0bc44bd8a5
+  - path: github.com/jtolds/gls
+    rev: 77f18212c9c7edc9bd6a33d383a7b545ce62f064
+  - path: github.com/kyokomi/emoji
+    rev: 2e9a9507333f3ee28f3fab88c2c3aba34455d734
+  - path: github.com/mattn/go-colorable
+    rev: efa589957cd060542a26d2dd7832fd6a6c6c3ade
+  - path: github.com/mattn/go-isatty
+    rev: 6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c
+  - path: github.com/matttproud/golang_protobuf_extensions
+    rev: c12348ce28de40eed0136aa2b644d0ee0650e56c
+  - path: github.com/mgutz/ansi
+    rev: 9520e82c474b0a04dd04f8a40959027271bab992
+  - path: github.com/miekg/dns
+    rev: 22cb769f47009091f1bc4bf9fffa398bbf6ca68f
+  - path: github.com/mitchellh/go-homedir
+    rev: b8bc1bf767474819792c23f32d8286a45736f1c6
+  - path: github.com/mitchellh/go-testing-interface
+    rev: a61a99592b77c9ba629d254a693acffaeb4b7e28
+  - path: github.com/mitchellh/mapstructure
+    rev: 3536a929edddb9a5b34bd6861dc4a9647cb459fe
+  - path: github.com/onsi/ginkgo
+    rev: 03ffd3f46debf00c49ed76d5dbb564ef4839adfe
+  - path: github.com/onsi/gomega
+    rev: 649b44d988ce182cabcda7dba01fcf3b6179ad19
+  - path: github.com/opencontainers/go-digest
+    rev: c9281466c8b2f606084ac71339773efd177436e7
+  - path: github.com/opencontainers/image-spec
+    rev: 09950c5fb1bb6745e72aa26ecde0d540e35f5286
+  - path: github.com/opentracing/opentracing-go
+    rev: 8b5a441dc60e8d9bb9bf9d22060b6d94fa599983
+  - path: github.com/pascaldekloe/goe
+    rev: c580d16984352a427218a8e43232313d1c1c6f84
+  - path: github.com/pierrec/lz4
+    rev: ed8d4cc3b461464e69798080a0092bd028910298
+  - path: github.com/pierrec/xxHash
+    rev: a0006b13c722f7f12368c00a3d3c2ae8a999a0c6
+  - path: github.com/pkg/errors
+    rev: 816c9085562cd7ee03e7f8188a1cfd942858cded
+  - path: github.com/pmezard/go-difflib
+    rev: 792786c7400a136282c1664665ae0a8db921c6c2
+  - path: github.com/prometheus/client_golang
+    rev: f504d69affe11ec1ccb2e5948127f86878c9fd57
+  - path: github.com/prometheus/client_model
+    rev: 99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c
+  - path: github.com/prometheus/common
+    rev: 38c53a9f4bfcd932d1b00bfc65e256a7fba6b37a
+  - path: github.com/prometheus/procfs
+    rev: 780932d4fbbe0e69b84c34c20f5c8d0981e109ea
+  - path: github.com/rcrowley/go-metrics
+    rev: 8732c616f52954686704c8645fe1a9d59e9df7c1
+  - path: github.com/satori/go.uuid
+    rev: 36e9d2ebbde5e3f13ab2e25625fd453271d6522e
+  - path: github.com/sean-/seed
+    rev: e2103e2c35297fb7e17febb81e49b312087a2372
+  - path: github.com/segmentio/kafka-go
+    rev: df82858665d07cebf1404cdaf025b435ebf7300b
+  - path: github.com/sirupsen/logrus
+    rev: 90150a8ed11b6ce285e77e8af2b0109559ce4777
+  - path: github.com/smartystreets/assertions
+    rev: 7678a5452ebea5b7090a6b163f844c133f523da2
+  - path: github.com/smartystreets/goconvey
+    rev: ef6db91d284a0e7badaa1f0c404c30aa7dee3aed
+  - path: github.com/smartystreets/gunit
+    rev: 6f0d6275bdcdd4411ad1c9b3b69eda55eea5b2db
+  - path: github.com/spf13/cobra
+    rev: a1f051bc3eba734da4772d60e2d677f47cf93ef4
+  - path: github.com/spf13/pflag
+    rev: ad68c28ee799163e627e77fcc6e8ecaa866e3535
+  - path: github.com/stretchr/testify
+    rev: c679ae2cc0cb27ec3293fea7e254e47386f05d69
+  - path: github.com/syndtr/goleveldb
+    rev: 169b1b37be738edb2813dab48c97a549bcf99bb5
+  - path: github.com/uber-go/atomic
+    rev: 8dc6146f7569370a472715e178d8ae31172ee6da
+  - path: github.com/uber/jaeger-client-go
+    rev: 7df3a19391621162a641c017e549fbc40ca6c914
+  - path: github.com/uber/jaeger-lib
+    rev: ed3a127ec5fef7ae9ea95b01b542c47fbd999ce5
+  - path: github.com/veritone/core-messages
+    rev: a72a2672c3633328d5dcf61f7182870dd363e4f2
+  - path: github.com/veritone/edge-job-cache
+    rev: 03757ec2118aa35e5a071d461bf14f24576c697f
+  - path: github.com/veritone/edge-messages
+    rev: 4b68c95e4950b93fd450dd0384c2d186633fe664
+  - path: github.com/veritone/go-config
+    rev: 30fbbc11666ebddb3ad8980f8ef096c50cdb601a
+  - path: github.com/veritone/go-logger
+    rev: a2664bbfc1944d64f9438f438ee23bba3450f26a
+  - path: github.com/veritone/go-messaging-lib
+    rev: bf8a764f379849c658eed0ea5ab40ac0fc86c72c
+  - path: github.com/veritone/go-metrics
+    rev: 3313bc86a9be7cd037db5451f3d885ac24dc791c
+  - path: go.uber.org/atomic
+    rev: 8dc6146f7569370a472715e178d8ae31172ee6da
+  - path: go.uber.org/multierr
+    rev: ddea229ff1dff9e6fe8a6c0344ac73b09e81fce5
+  - path: go.uber.org/zap
+    rev: 67bc79d13d155c02fd008f721863ff8cc5f30659
+  - path: golang.org/x/crypto
+    rev: 88942b9c40a4c9d203b82b3731787b672d6e809b
+  - path: golang.org/x/net
+    rev: 6078986fec03a1dcc236c34816c71b0e05018fda
+  - path: golang.org/x/sync
+    rev: 1d60e4601c6fd243af51cc01ddf169918a5407ca
+  - path: golang.org/x/sys
+    rev: 13d03a9a82fba647c21a0ef8fba44a795d0f0835
+  - path: golang.org/x/text
+    rev: ece95c760240037f89ebcbdd7155ac8cb52e38fa
+  - path: golang.org/x/time
+    rev: 26559e0f760e39c24d730d3224364aef164ee23f
+  - path: google.golang.org/appengine
+    rev: b97816dfbd96fdde1121772cc0c3e91142e04d10
+  - path: google.golang.org/genproto
+    rev: bd91e49a0898e27abb88c339b432fa53d7497ac0
+  - path: google.golang.org/grpc
+    rev: 49616eb1a1e40214b50e751950ad3df236f1db74
+  - path: gopkg.in/airbrake/gobrake.v2
+    rev: 668876711219e8b0206e2994bf0a59d889c775aa
+  - path: gopkg.in/check.v1
+    rev: 20d25e2804050c1cd24a7eea1e7a6447dd0e74ec
+  - path: gopkg.in/gemnasium/logrus-airbrake-hook.v2
+    rev: e928b033a891c0175fb643d5aa0779e86325eb12
+  - path: gopkg.in/ini.v1
+    rev: 6333e38ac20b8949a8dd68baa3650f4dee8f39f0
+  - path: gopkg.in/urfave/cli.v1
+    rev: cfb38830724cc34fedffe9a2a29fb54fa9169cd1
+  - path: gopkg.in/vmihailenco/msgpack.v2
+    rev: f4f8982de4ef0de18be76456617cc3f5d8d8141e
+  - path: gopkg.in/yaml.v2
+    rev: 86f5ed62f8a0ee96bd888d2efdfd6d4fb100a4eb
+  - path: gotest.tools
+    rev: bfe3ac53278416eb6ce6aff7fe2132fc00ba08d3

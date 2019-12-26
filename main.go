@@ -1,7 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"github.com/gin-gonic/gin"
+	"parking_to_esay/router"
+)
 
 func main() {
-	fmt.Println("hello world")
+	r := gin.Default()
+	router.InitRouter(r)
+	r.Run(":8085")
 }
