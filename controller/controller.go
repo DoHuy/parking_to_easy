@@ -1,9 +1,13 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"net/http"
+	"parking_to_esay/model"
+	"path/filepath"
+	"time"
 )
 
 type Controller struct {
@@ -15,10 +19,74 @@ func NewController(instance *gorm.DB) *Controller{
 }
 
 func (this *Controller) CreateNewParking(c *gin.Context) {
+	//buf := make([]byte, 1024)
+	//num, _ := c.Request.Body.Read(buf)
+	////reqBody := string(buf[0:num])
+	//var test interface{}
+	//json.Unmarshal(buf[0:num], &test)
+	//c.JSON(http.StatusOK, test)
 
-	b:=map[string]string{
-		"a":"b",
+	return
+}
+
+func (this *Controller) UploadFiles(c *gin.Context) {
+
+	form,err := c.MultipartForm()
+	files := form.File["upload[]"]
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
 	}
-	c.JSON(http.StatusOK, b)
+	STATIC_PATH, _ := filepath.Abs("./resource/images")
+	envConfig := model.GetEnvironmentConfig()
+	var images []string
+	for _, file := range files {
+
+		if file.Size <= model.GetMaxUploadedFileSize() {
+			c.JSON(http.StatusBadRequest, model.ErrorMessage{Message: "Ảnh được tải lên không được vượt quá 10 MB"})
+			return
+		}
+
+		fileID := fmt.Sprintf("(%s)%s",time.Now().Format(time.RFC3339), file.Filename)
+		err := c.SaveUploadedFile(file, filepath.Join(STATIC_PATH, fileID))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, model.ErrorMessage{
+				Message: "Server error",
+			})
+			return
+		}
+		images = append(images, fmt.Sprintf("http://%s:%s/%s", envConfig.Hostname, envConfig.Port, fileID))
+	}
+
+	c.JSON(http.StatusOK, map[string][]string {
+		"images": images,
+	})
+	return
+}
+
+func (this *Controller) FindParkingByID(c *gin.Context) {
+	parkingId := c.Param("parkingId")
+	parking, err := model.FindParkingByID(parkingId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorMessage{
+			Message: "Server error",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, parking)
+	return
+}
+
+func (this *Controller) GetAllParkings(c *gin.Context) {
+	limit  := c.Param("limit")
+	offset := c.Param("offset")
+	parkings, err := model.GetAllParking(limit, offset)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorMessage{
+			Message: "Server error",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, parkings)
 	return
 }

@@ -1,0 +1,1 @@
+curl -X POST http://localhost:8085/files/upload -F "upload[]=@/home/huydv/Desktop/Screenshot/DatChoQuaApp.jpg" -F "upload[]=@/home/huydv/Desktop/Screenshot/DatChoQuaApp.jpg" -H "Content-Type: multipart/form-data"

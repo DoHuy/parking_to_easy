@@ -10,13 +10,16 @@ import (
 
 
 func InitRouter(router *gin.Engine, conn *gorm.DB) {
-
 	// khoi tao middleware
 	middleware := middleware.NewMiddleware(conn)
 	//khoi tao conntroller
 	controller := controller.NewController(conn)
 	// Tạo mới bãi đẫu xe
-	router.POST("/api/parking", middleware.ValidateParkingCreating, controller.CreateNewParking)
+	apiParking := router.Group("/api")
+	apiParking.GET("/parkings/:parkingId", controller.FindParkingByID)
+	//apiParking.GET("/parkings/all/:limit/:offset", controller.GetAllParkings)
 	////////////////////////
+	// Upload nhieu file
+	router.POST("/api/files/upload", middleware.BeforeUploadFiles, controller.UploadFiles)
 	return
 }

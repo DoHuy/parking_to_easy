@@ -10,6 +10,9 @@ import (
 
 var connection *gorm.DB
 
+type ErrorMessage struct {
+	Message		string		`json:"error_message"`
+}
 type UserDevice struct {
 	ID				int 		`gorm:"column:id" json:"id"`
 	DeviceToken		string		`gorm:"type:text" json:"deviceToken"`
@@ -61,6 +64,7 @@ type Parking struct {
 	CreatedAt		time.Time	`gorm:"column:created_at" json:"created_at"`
 	ModifiedAt 		time.Time	`gorm:"column:modified_at" json:"modified_at"`
 	DeletedAt 		time.Time	`gorm:"column:deleted_at" json:"deleted_at"`
+	Describe		string		`gorm:"column:describe" json:"describe"`
 
 }
 
@@ -81,16 +85,16 @@ type Transaction struct {
 
 }
 
-func ConnectDatabase() error {
+func ConnectDatabase() (*gorm.DB, error) {
 	config := getDatabaseConfig()
 	var err error
 	connectionInfo := fmt.Sprintf(`%s:%s@(%s)/%s?charset=utf8&parseTime=True&loc=Local`, config.Database.Username, config.Database.Password, config.Database.Address, config.Database.DatabaseName)
 	connection, err = gorm.Open("mysql", connectionInfo)
 	if err != nil {
 		fmt.Println(err)
-		return fmt.Errorf("error in connectDatabase(): %s", err.Error())
+		return nil, fmt.Errorf("error in connectDatabase(): %s", err.Error())
 	}
-	return nil
+	return connection, nil
 }
 
 // Thao tác với Credential model
@@ -99,6 +103,7 @@ func FindCredentialByID(id int) Credential {
 	connection.Raw("SELECT username, password, email, points, role, token, expired, created_at, modified_at, deleted_at FROM credentials where id=?", id).Scan(&credential)
 	return credential
 }
+
 func FindAllCredential(limit, offset int) []Credential {
 	var credentials []Credential
 	rows, _ := connection.Raw("SELECT username, password, email, points, role, token, expired, created_at, modified_at, deleted_at FROM credentials LIMIT ? OFFSET ?", limit, offset).Rows()
@@ -110,36 +115,62 @@ func FindAllCredential(limit, offset int) []Credential {
 	}
 	return credentials
 }
-func CreateCredential(newUser Credential) Credential {
+
+func CreateCredential(newUser Credential) error {
 	var credential Credential
-	connection.Table("credentials").Create(&newUser).Scan(&credential)
-	return credential
+	err := connection.Table("credentials").Create(&newUser).Scan(&credential).Error
+
+	if err != nil {
+		return fmt.Errorf("Loi truy van database: %v", err.Error())
+	}
+	return nil
 }
 ////////////////////////////////////////////////////
+
 // Thao tac vs Parking Model
 func CreateParking(newParking Parking) Parking {
 	var parking Parking
 	connection.Table("parkings").Create(&newParking).Scan(&parking)
 	return parking
 }
+
 func ModifyParking(updatedParking Parking) Parking {
 	var parking Parking
 	connection.Model(&parking).Updates(updatedParking).Scan(&parking)
 	return parking
 }
-func FindParkingByID(id int) Parking {
-	var parking Parking
-	connection.Table("parkings").Raw("SELECT * FROM parkings WHERE id=?", id).Scan(&parking)
-	return parking
-}
-func GetAllParking() []Parking{
+
+func FindParkingByID(id string) ([]Parking, error) {
 	var parkings []Parking
-	rows, _ := connection.Table("parkings").Raw("SELECT * FROM parkings").Rows()
-	index := 0
-	for rows.Next() {
-		rows.Scan(&parkings[index])
-		index++
+	err := connection.Table("parkings").Raw("SELECT * FROM parkings INNER JOIN owners ON owners.credentialId=parkings.ownerId WHERE parkings.id=?", id).Scan(&parkings).Error
+	if err != nil {
+		return nil, fmt.Errorf("Loi truy van database: %v", err.Error())
 	}
-	return parkings
+	for i, _ := range parkings {
+		err := connection.Table("parkings").Raw("SELECT*from owners WHERE credentialId=?", parkings[i].OwnerId).Scan(&parkings[i].Owner).Error
+
+		if err != nil {
+			return nil, fmt.Errorf("Loi truy van database: %v", err.Error())
+		}
+	}
+
+	return parkings, nil
 }
+//
+func GetAllParking(limit, offset string) ([]Parking, error){
+	var parkings []Parking
+	err := connection.Table("parkings").Raw("SELECT * FROM parkings LIMIT ? OFFSET ?", limit, offset).Scan(&parkings).Error
+	if err != nil {
+		return nil, fmt.Errorf("Loi truy van database: %v", err.Error())
+	}
+	for i, _ := range parkings {
+		err := connection.Table("parkings").Raw("SELECT*from owners WHERE credentialId=?", parkings[i].OwnerId).Scan(&parkings[i].Owner).Error
+
+		if err != nil {
+			return nil, fmt.Errorf("Loi truy van database: %v", err.Error())
+		}
+	}
+	return parkings, nil
+}
+
 //////////////////////////////////////////////////
