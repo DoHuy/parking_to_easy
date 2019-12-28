@@ -4,7 +4,8 @@ ADD . /go/src/github.com/DoHuy/parking-to-easy
 RUN apk update && \
     apk add -U build-base git curl libstdc++ ca-certificates && \
     cd /go/src/github.com/DoHuy/parking-to-easy && \
-#    go get -u github.com/gin-gonic/gin && \
+    go get -u github.com/gin-gonic/gin && \
+    go install -v math/bits && \
     go env && go list all | grep cover && \
     GOPATH=/go make docker
 
