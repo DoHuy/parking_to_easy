@@ -12,7 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"parking_to_esay/model"
+	"github.com/DoHuy/parking_to_easy/model"
 	"time"
 )
 

@@ -3,8 +3,8 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	"parking_to_esay/controller"
-	"parking_to_esay/middleware"
+	"github.com/DoHuy/parking_to_easy/controller"
+	"github.com/DoHuy/parking_to_easy/middleware"
 )
 
 

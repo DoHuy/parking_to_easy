@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"net/http"
-	"parking_to_esay/model"
+	"github.com/DoHuy/parking_to_easy/model"
 )
 
 type Middleware struct {

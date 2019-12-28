@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"parking_to_esay/model"
-	"parking_to_esay/router"
+	"github.com/DoHuy/parking_to_easy/model"
+	"github.com/DoHuy/parking_to_easy/router"
 )
 
 func main() {

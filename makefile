@@ -27,16 +27,6 @@ linux:
 .PHONY: docker
 docker: deps linux
 
-.PHONY: build.static
-build.static:
-	# Build statically linked binary
-	go build -ldflags "$(BUILD_INFO_FLAGS) $(STATIC_BUILD_FLAGS)" -a -o $(BINARY_NAME) .
-
-.PHONY: check
-check:
-	# Only continue if go is installed
-	go version || ( echo "Go not installed, exiting"; exit 1 )
-
 .PHONY: clean
 clean:
 	go clean -i
@@ -53,11 +43,6 @@ deps:
 fmt:
 	# Format all Go source files (excluding vendored packages)
 	go fmt $(LIST_NO_VENDOR)
-
-generate-deps:
-	# Generate vendor.yml
-	govend -v -l
-	git checkout vendor/.gitignore
 
 .PHONY: test
 test:
