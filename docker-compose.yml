@@ -7,15 +7,22 @@ services:
     volumes:
       - ./resource/migration:/var/lib/mysql
     networks:
-      - test_network
+      - backend
+  redis:
+    image: redis:5.0.7-alpine
+    volumes:
+      -
+    networks:
+      - backend
   api:
     build: .
     ports:
       - "8124:8085"
     networks:
-      - test_network
+      - backend
     depends_on: #cho db start trc
       - db
+      - redis
 networks:
-    test_network:
-      driver: bridge
+  backend:
+    driver: bridge
