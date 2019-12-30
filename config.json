@@ -3,7 +3,7 @@
     "username": "root",
     "password": "123",
     "database_name": "parkings",
-    "address": "119.17.214.120:8881"
+    "address": "db:3306"
   },
   "secret_key": "abcdef123456789",
   "max_uploaded_file_size": 100000,
