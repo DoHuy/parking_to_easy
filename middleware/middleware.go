@@ -25,7 +25,7 @@ func (this *Middleware) ValidateParkingCreating(c *gin.Context) {
 	c.Next()
 }
 
-func (this *Middleware) BeforeUploadFiles(c *gin.Context) {
+func (this *Middleware) BeforeUploadFiles(c *gin.Context){
 	// check token hop le
 
 	// check file size, file type
@@ -44,6 +44,6 @@ func (this *Middleware) BeforeUploadFiles(c *gin.Context) {
 		}
 
 	}
-	fmt.Println("qewqeqwewqeqw")
+	fmt.Println("sadgdjajgfafjgwkfjgwer")
 	c.Next()
 }

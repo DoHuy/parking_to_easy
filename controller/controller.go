@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -19,13 +20,36 @@ func NewController(instance *gorm.DB) *Controller{
 }
 
 func (this *Controller) CreateNewParking(c *gin.Context) {
-	//buf := make([]byte, 1024)
-	//num, _ := c.Request.Body.Read(buf)
-	////reqBody := string(buf[0:num])
-	//var test interface{}
-	//json.Unmarshal(buf[0:num], &test)
-	//c.JSON(http.StatusOK, test)
 
+	buf := make([]byte, 1024)
+	num, _ := c.Request.Body.Read(buf)
+	var parking interface{}
+	json.Unmarshal(buf[0:num], &parking)
+
+	//if err != nil {
+	//	c.JSON(http.StatusInternalServerError, model.ErrorMessage{
+	//		Message: "Server error",
+	//	})
+	//	return
+	//}
+	c.JSON(http.StatusOK, parking)
+	return
+}
+
+func (this *Controller) CreateNewParkingByAdmin(c *gin.Context) {
+
+	buf := make([]byte, 1024)
+	num, _ := c.Request.Body.Read(buf)
+	var newParkingInput interface{}
+	json.Unmarshal(buf[0:num], &newParkingInput)
+	err, parking := model.CreateNewParkingByAdmin(newParkingInput)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorMessage{
+			Message: "Server error",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, parking)
 	return
 }
 
@@ -42,7 +66,7 @@ func (this *Controller) UploadFiles(c *gin.Context) {
 	var images []string
 	for _, file := range files {
 
-		if file.Size <= model.GetMaxUploadedFileSize() {
+		if file.Size >= model.GetMaxUploadedFileSize() {
 			c.JSON(http.StatusBadRequest, model.ErrorMessage{Message: "Ảnh được tải lên không được vượt quá 10 MB"})
 			return
 		}
@@ -73,6 +97,7 @@ func (this *Controller) FindParkingByID(c *gin.Context) {
 		})
 		return
 	}
+	c.Header("Access-Control-Allow-Origin", "*")
 	c.JSON(http.StatusOK, parking)
 	return
 }
@@ -88,5 +113,22 @@ func (this *Controller) GetAllParkings(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, parkings)
+	return
+}
+
+func (this *Controller) CreateNewCredential(c *gin.Context) {
+	buf := make([]byte, 1024)
+	num, _ := c.Request.Body.Read(buf)
+	var credential model.Credential
+	json.Unmarshal(buf[0:num], &credential)
+	//c.JSON(http.StatusOK, parking)
+	err, newCredential := model.CreateCredential(credential)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorMessage{
+			Message: "Server error",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, newCredential)
 	return
 }

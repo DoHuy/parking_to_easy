@@ -1,10 +1,10 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 	"github.com/DoHuy/parking_to_easy/controller"
 	"github.com/DoHuy/parking_to_easy/middleware"
+	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 )
 
 
@@ -15,11 +15,20 @@ func InitRouter(router *gin.Engine, conn *gorm.DB) {
 	//khoi tao conntroller
 	controller := controller.NewController(conn)
 	// Tạo mới bãi đẫu xe
-	apiParking := router.Group("/api")
-	apiParking.GET("/parkings/:parkingId", controller.FindParkingByID)
-	//apiParking.GET("/parkings/all/:limit/:offset", controller.GetAllParkings)
+	router.GET("/api/get/parking/:parkingId", controller.FindParkingByID)
+	router.GET("/api/get/all/parkings/:limit/:offset", controller.GetAllParkings)
+	router.POST("/api/user/create/parking", controller.CreateNewParking)
+	router.POST("/api/admin/create/parking", controller.CreateNewParkingByAdmin)
+	// Credential
+	router.POST("/api/register", controller.CreateNewCredential)
+	//router.POST("/api/login", controller.Login)
+	//
+
+	////////////////////////
+
 	////////////////////////
 	// Upload nhieu file
-	router.POST("/api/files/upload", middleware.BeforeUploadFiles, controller.UploadFiles)
+	//router.Use(middleware.BeforeUploadFiles())
+	router.POST("/api/files/upload",middleware.BeforeUploadFiles, controller.UploadFiles)
 	return
 }

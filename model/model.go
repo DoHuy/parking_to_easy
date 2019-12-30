@@ -116,22 +116,68 @@ func FindAllCredential(limit, offset int) []Credential {
 	return credentials
 }
 
-func CreateCredential(newUser Credential) error {
+func CreateCredential(newUser Credential) (error, Credential) {
 	var credential Credential
-	err := connection.Table("credentials").Create(&newUser).Scan(&credential).Error
-
-	if err != nil {
-		return fmt.Errorf("Loi truy van database: %v", err.Error())
+	 db := connection.Table("credentials").Create(&newUser).Scan(&credential)
+	if db.Error != nil {
+		return fmt.Errorf("Loi truy van database: %v", db.Error.Error()), Credential{}
 	}
-	return nil
+	return nil, credential
 }
 ////////////////////////////////////////////////////
 
 // Thao tac vs Parking Model
-func CreateParking(newParking Parking) Parking {
+func CreateOwnerAndParking(data interface{}) (map[string]interface{}, error) {
 	var parking Parking
-	connection.Table("parkings").Create(&newParking).Scan(&parking)
-	return parking
+	var owner	Owner
+
+	// init transaction
+	tx := connection.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+	if err := tx.Error; err != nil {
+		return nil, err
+	}
+	err := tx.Table("owners").Create(&data).Scan(&owner).Error
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	tx.Table("parking").Create(&data).Scan(&parking)
+	if err := tx.Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return nil, err
+	}
+
+	result := map[string]interface{}{
+		"message": "Tạo bãi xe thành công",
+		"parking":parking,
+		"owner": owner,
+	}
+	return result, nil
+
+}
+
+func CreateNewParkingByAdmin(newParking interface{}) (error, interface{}) {
+	var parking Parking
+	err := connection.Table("parkings").Create(&newParking).Scan(&parking).Error
+	if err != nil {
+		panic(err.Error())
+		return err, nil
+	}
+	result := map[string]interface{}{
+		"message":"Tạo bãi xe thành công",
+		"parking": parking,
+	}
+	return nil, result
 }
 
 func ModifyParking(updatedParking Parking) Parking {

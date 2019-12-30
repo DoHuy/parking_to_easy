@@ -22,7 +22,9 @@ build:
 linux:
 	# Build project for linux
 	env GOOS=linux GOARCH=amd64 go build -ldflags "$(BUILD_INFO_FLAGS)" -a -o $(BINARY_NAME).linux .
-
+.PHONY: windows
+windows:
+	env GOOS=windows GOARCH=amd64 go build -ldflags "$(BUILD_INFO_FLAGS)" -a -o $(BINARY_NAME).exe .
 # `make docker` -- build Docker image with linux bits
 .PHONY: docker
 docker: deps linux

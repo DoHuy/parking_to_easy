@@ -3,5 +3,5 @@ vendors:
     rev: 79a77d771dee4e4b60e9c543e8663bbc80466670
   - path: github.com/gin-gonic/gin
     rev: 2ee0e963942d91be7944dfcc07dc8c02a4a78566
-  - path: github.com/DoHuy/parking_to_easy
-    rev: a2b3ab03ee8d418251b8b29412e491e0c26450c3
+  - path: github.com/gin-contrib/static
+    rev: f81c604d8ac2e088ff70b9ce1809016e6b85e7c0
