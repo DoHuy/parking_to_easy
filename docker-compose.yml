@@ -4,20 +4,19 @@ version: '3'
 services:
   db:
     image: mysql:latest
+    container_name: parking_db
     volumes:
       - ./resource/migration:/var/lib/mysql
     networks:
       - backend
   redis:
     image: redis:5.0.7-alpine
-    volumes:
-      -
     networks:
       - backend
   api:
     build: .
     ports:
-      - "8124:8085"
+      - "119.17.214.120:8124:8085"
     networks:
       - backend
     depends_on: #cho db start trc

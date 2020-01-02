@@ -5,3 +5,5 @@ vendors:
     rev: 2ee0e963942d91be7944dfcc07dc8c02a4a78566
   - path: github.com/gin-contrib/static
     rev: f81c604d8ac2e088ff70b9ce1809016e6b85e7c0
+  - path: github.com/gomodule/redigo
+    rev: 09d84710e01a746165eadd36e85d25e0e1923cff
