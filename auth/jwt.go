@@ -1,124 +1,99 @@
 package auth
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"github.com/DoHuy/parking_to_easy/model"
+	"strings"
 	"time"
 )
 
-func hashMAC(message, key []byte) string {
-	secret := "mysecret"
-	data := "data"
-	fmt.Printf("Secret: %s Data: %s\n", secret, data)
 
-	// Create a new HMAC by defining the hash type and the key (as byte array)
-	h := hmac.New(sha256.New, []byte(secret))
-
-	// Write Data to it
-	h.Write([]byte(data))
-
-	// Get result and encode as hexadecimal string
-	sha := hex.EncodeToString(h.Sum(nil))
-	return sha
+func CompareHmac(signatureValue, token, secret string) bool {
+	return isValidHash(signatureValue, token, secret)
 }
 
-type Header struct{
-	HashType string
+// Base64Encode takes in a string and returns a base 64 encoded string
+func Base64Encode(src string) string {
+	return strings.
+		TrimRight(base64.URLEncoding.
+			EncodeToString([]byte(src)), "=")
 }
 
-type Body struct{
-	UserId int
-	Role string
-	Expired time.Time
-}
-
-type Footer struct{
-	SecretKey model.SecretKey
-}
-
-type JWT struct {
-	Header Header `json:"header"`
-	Body Body	  `json:"body"`
-	Footer Footer `json:"footer"`
-}
-
-func encrypt(hashType string, userId int, role string, expired time.Time) (encmess string, err error) {
-	secretSeq := model.GetSecretKey()
-	tokenComponent := JWT{
-		Header: Header{
-			HashType: hashType,
-		},
-		Body: Body{
-			UserId: userId,
-			Role: role,
-			Expired: expired,
-		},
-		Footer: Footer{
-			SecretKey: secretSeq,
-		},
+// Base64Encode takes in a base 64 encoded string and returns the //actual string or an error of it fails to decode the string
+func Base64Decode(src string) (string, error) {
+	if l := len(src) % 4; l > 0 {
+		src += strings.Repeat("=", 4-l)
 	}
-	header, _ := json.Marshal(&tokenComponent.Header)
-	body, 	_ := json.Marshal(&tokenComponent.Body)
-	sha := hashMAC([]byte(fmt.Sprintf("%s.%s", string(header), string(body))), []byte(tokenComponent.Footer.SecretKey))
-	token := fmt.Sprintf("%s.%s.%s", string(header), string(body), sha)
-
-	// encript token
-	plainText := []byte(token)
-	secretKey  := []byte(tokenComponent.Footer.SecretKey)
-	block, err := aes.NewCipher(secretKey)
+	decoded, err := base64.URLEncoding.DecodeString(src)
+	fmt.Sprintln("base64 decode")
 	if err != nil {
-		return
+		errMsg := fmt.Errorf("Decoding Error %s", err)
+		return "", errMsg
 	}
-
-	cipherText := make([]byte, aes.BlockSize+len(plainText))
-	iv := cipherText[:aes.BlockSize]
-	if _, err = io.ReadFull(rand.Reader, iv); err != nil {
-		return
-	}
-
-	stream := cipher.NewCFBEncrypter(block, iv)
-	stream.XORKeyStream(cipherText[aes.BlockSize:], plainText)
-
-	//returns to base64 encoded string
-	encmess = base64.URLEncoding.EncodeToString(cipherText)
-	return
+	return string(decoded), nil
 }
 
-func decrypt(securemess string) (decodedmess string, err error) {
-	cipherText, err := base64.URLEncoding.DecodeString(securemess)
-	if err != nil {
-		return
-	}
-
-	secretSeq := model.GetSecretKey()
-	block, err := aes.NewCipher([]byte(secretSeq))
-	if err != nil {
-		return
-	}
-
-	if len(cipherText) < aes.BlockSize {
-		err = errors.New("Ciphertext block size is too short!")
-		return
-	}
-
-	iv := cipherText[:aes.BlockSize]
-	cipherText = cipherText[aes.BlockSize:]
-
-	stream := cipher.NewCFBDecrypter(block, iv)
-	// XORKeyStream can work in-place if the two arguments are the same.
-	stream.XORKeyStream(cipherText, cipherText)
-
-	decodedmess = string(cipherText)
-	return
+// Hash generates a Hmac256 hash of a string using a secret
+func Hash(src string, secret string) string {
+	key := []byte(secret)
+	h := hmac.New(sha256.New, key)
+	h.Write([]byte(src))
+	return base64.StdEncoding.EncodeToString(h.Sum(nil))
 }
 
+// isValidHash validates a hash againt a value
+func isValidHash(value string, hash string, secret string) bool {
+	return hash == Hash(value, secret)
+}
+
+func Encode(payload model.Payload, secret string) (string, error) {
+	header := model.Header{
+		Alg: "HS256",
+		Typ: "JWT",
+	}
+	//var str []byte
+	str, _ := json.Marshal(header)
+	headerToBase64 := Base64Encode(string(str))
+	encodedPayload, _ := json.Marshal(payload)
+	signatureValue := fmt.Sprintf("%s.%s", headerToBase64, Base64Encode(string(encodedPayload)))
+	return fmt.Sprintf("%s.%s", signatureValue, Hash(signatureValue, secret)), nil
+}
+
+func Decode(jwt string, secret string) ([]byte, error) {
+	token := strings.Split(jwt, ".")
+	// check if the jwt token contains
+	// header, payload and token
+	if len(token) != 3 {
+		splitErr := errors.New("Invalid token: token should contain header, payload and secret")
+		return nil, splitErr
+	}
+	// decode payload
+	decodedPayload, PayloadErr := Base64Decode(token[1])
+	if PayloadErr != nil {
+		return nil, fmt.Errorf("Invalid payload: %s", PayloadErr.Error())
+	}
+	payload := model.Payload{}
+	// parses payload from string to a struct
+	ParseErr := json.Unmarshal([]byte(decodedPayload), &payload)
+	if ParseErr != nil {
+		return nil, fmt.Errorf("Invalid payload: %s", ParseErr.Error())
+	}
+	// checks if the token has expired.
+	expired, _ := time.Parse(time.RFC3339, payload.Expired)
+	if time.Now().Unix() > expired.Unix() {
+		return nil, errors.New("Expired token: token has expired")
+	}
+	signatureValue := token[0] + "." + token[1]
+	// verifies if the header and signature is exactly whats in
+	// the signature
+	if CompareHmac(signatureValue, token[2], secret) == false {
+		return nil, errors.New("Invalid token")
+	}
+	result, _ := json.Marshal(payload)
+	return result, nil
+}
