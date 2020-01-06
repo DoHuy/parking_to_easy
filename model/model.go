@@ -78,6 +78,13 @@ type Transaction struct {
 
 }
 
+type Rating struct {
+	ID				int		`gorm:"column:id" json:"id,omitempty"`
+	Stars			int		`gorm:"column:stars" json:"stars,omitempty"`
+	CredentialId	int		`gorm:"column:credentialId" json:"credentialId,omitempty"`
+	ParkingId		int		`gorm:"column:parkingId" json:"parkingId,omitempty"`
+}
+
 
 type Payload struct {
 	UserId  int     `json:"userId"`

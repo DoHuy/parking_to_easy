@@ -13,6 +13,8 @@ type ParkingDAO interface {
 	FindParkingByID(id string) (model.Parking, error)
 	FindParkingByOwnerId(ownerId string) (model.Owner, error)
 	GetAllParking() ([]model.Parking, error)
+	ModifyParking(data interface{}) error
+	DeleteParking(data interface{}) error
 }
 
 func (db *DAO) CreateNewParkingOfOwner(newParking interface{})  error{
@@ -56,10 +58,10 @@ func (db *DAO)ChangStatusParking(updatedParking model.Parking)  error {
 
 func (db *DAO)FindParkingByID(id string) (model.Parking, error) {
 	var parking model.Parking
-	err := db.connection.Table("parkings").Raw("SELECT * FROM parkings WHERE parkings.id=?", id).Scan(&parking).Error
+	err := db.connection.Table("parkings").Raw("SELECT * FROM parkings WHERE parkings.id=? AND deleted_at=\"\"", id).Scan(&parking).Error
 
 	if err != nil {
-		return model.Parking{}, fmt.Errorf("Loi truy van database: %v", err.Error())
+		return model.Parking{}, err
 	}
 	return parking, nil
 }
@@ -72,7 +74,7 @@ func (db *DAO)FindParkingByOwnerId(ownerId string) (model.Owner, error) {
 	if err != nil {
 		return model.Owner{}, err
 	}
-	err  = db.connection.Raw("SELECT id, address, capacity, status FROM parkings WHERE ownerId=?", ownerId).Scan(&parkings).Error
+	err  = db.connection.Raw("SELECT id, address, capacity, status FROM parkings WHERE ownerId=? AND deleted_at=\"\"", ownerId).Scan(&parkings).Error
 	if err != nil {
 		return model.Owner{}, err
 	}
@@ -82,7 +84,7 @@ func (db *DAO)FindParkingByOwnerId(ownerId string) (model.Owner, error) {
 
 func (db *DAO)GetAllParking() ([]model.Parking, error) {
 	var parkings []model.Parking
-	err := db.connection.Table("parkings").Raw("SELECT * FROM parkings").Scan(&parkings).Error
+	err := db.connection.Table("parkings").Raw("SELECT * FROM parkings WHERE deleted_at=\"\"").Scan(&parkings).Error
 	if err != nil {
 		return nil, fmt.Errorf("Loi truy van database: %v", err.Error())
 	}
@@ -90,4 +92,41 @@ func (db *DAO)GetAllParking() ([]model.Parking, error) {
 		return parkings, fmt.Errorf("records not found")
 	}
 	return parkings, nil
+}
+
+func (db *DAO)ModifyParking(data interface{}) error {
+	type UpdatedParking struct {
+		ID			string	`json:"id"`
+		Capacity	string	`json:"capacity"`
+		ModifiedAt	string	`json:"modified_at"`
+	}
+	var updatedParking UpdatedParking
+	raw,_ := json.Marshal(data)
+	err := json.Unmarshal(raw, &updatedParking)
+	if err != nil {
+		return err
+	}
+	err = db.connection.Exec("UPDATE parkings SET capacity=?, modified_at=? WHERE id=?", updatedParking.Capacity, updatedParking.ModifiedAt, updatedParking.ID).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (db *DAO)DeleteParking(data interface{}) error {
+	type UpdatedParking struct {
+		ID			string	`json:"id"`
+		DeletedAt	string	`json:"deleted_at"`
+	}
+	var updatedParking UpdatedParking
+	raw,_ := json.Marshal(data)
+	err := json.Unmarshal(raw, &updatedParking)
+	if err != nil {
+		return err
+	}
+	err = db.connection.Exec("UPDATE parkings SET deleted_at=? WHERE id=?",updatedParking.DeletedAt, updatedParking.ID).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }

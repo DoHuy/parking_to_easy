@@ -419,3 +419,166 @@ func (mid *Middleware)BeforeGetAllOwners(c *gin.Context) model.Middleware{
 	}
 	return model.Middleware{}
 }
+
+func (mid *Middleware)BeforeDisableOwner(c *gin.Context) model.Middleware{
+	token, err := utils.GetTokenFromHeader(c)
+	if err != nil {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check format token
+	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	if checked != true {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check expired token
+	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	if checkedExpired == true {
+		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
+	}
+	role, err,_ := mid.Auth.Authorize(token)
+	if role != "admin" {
+		return model.Middleware{StatusCode: 503, Message: "Hệ thống không hỗ trợ dịch vụ này"}
+	}
+	type DataStruct struct {
+		ID			string	`json:"id"`
+		Status		string	`json:"status"`
+		ModifiedAt	string	`json:"modified_at"`
+	}
+
+	return model.Middleware{Data:DataStruct{ID: c.Param("id"), Status: "DISABLED", ModifiedAt:time.Now().Format(time.RFC3339)}}
+}
+
+func (mid *Middleware)BeforeModifyParkingByOwner(c *gin.Context) model.Middleware{
+	token, err := utils.GetTokenFromHeader(c)
+	if err != nil {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check format token
+	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	if checked != true {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check expired token
+	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	if checkedExpired == true {
+		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
+	}
+	var payload model.Payload
+	secretKey  := string(config.GetSecretKey())
+	raw, _ := auth.Decode(token, secretKey)
+	err = json.Unmarshal(raw, &payload)
+	if err != nil {
+		return model.Middleware{StatusCode: 500, Message: "Hệ thống có sự cố"}
+	}
+	// check xem owner co so huu bai nay hay khong
+	var parking model.Parking
+	var parkingIface mysql.ParkingDAO
+	parkingIface = mid.DAO
+	parking, err = parkingIface.FindParkingByID(c.Param("id"))
+	if err != nil {
+		if err.Error() == "record not found" {
+			return model.Middleware{StatusCode: 404, Message: "Bãi đỗ này không tồn tại"}
+		}
+		return model.Middleware{StatusCode: 500, Message: "Hệ thống có sự cố"}
+	}
+	if parking.OwnerId != payload.UserId {
+		return model.Middleware{StatusCode:403, Message: "Bạn không sở hữu bãi đỗ này"}
+	}
+
+	// get body
+	var updatedParking model.Parking
+	body := utils.GetBodyRequest(c)
+	err   = json.Unmarshal(body, &updatedParking)
+	fmt.Println("updated parking :::", updatedParking)
+	// convert data
+	type UpdatedData struct {
+		ID			string		`json:"id"`
+		Capacity	string		`json:"capacity"`
+		ModifiedAt	string		`json:"modified_at"`
+	}
+	return model.Middleware{Data:UpdatedData{ID: c.Param("id"), Capacity: updatedParking.Capacity, ModifiedAt: time.Now().Format(time.RFC3339)}}
+}
+
+func (mid *Middleware)BeforeDeleteParkingByOwner(c *gin.Context) model.Middleware{
+	token, err := utils.GetTokenFromHeader(c)
+	if err != nil {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check format token
+	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	if checked != true {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check expired token
+	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	if checkedExpired == true {
+		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
+	}
+	var payload model.Payload
+	secretKey  := string(config.GetSecretKey())
+	raw, _ := auth.Decode(token, secretKey)
+	err = json.Unmarshal(raw, &payload)
+	if err != nil {
+		return model.Middleware{StatusCode: 500, Message: "Hệ thống có sự cố"}
+	}
+	// check xem owner co so huu bai nay hay khong
+	var parking model.Parking
+	var parkingIface mysql.ParkingDAO
+	parkingIface = mid.DAO
+	parking, err = parkingIface.FindParkingByID(c.Param("id"))
+	if err != nil {
+		if err.Error() == "record not found" {
+			return model.Middleware{StatusCode: 404, Message: "Bãi đỗ này không tồn tại"}
+		}
+		return model.Middleware{StatusCode: 500, Message: "Hệ thống có sự cố"}
+	}
+	if parking.OwnerId != payload.UserId {
+		return model.Middleware{StatusCode:403, Message: "Bạn không sở hữu bãi đỗ này"}
+	}
+
+	// convert data
+	type DeletedData struct {
+		ID			string		`json:"id"`
+		DeletedAt	string		`json:"deleted_at"`
+	}
+	return model.Middleware{Data:DeletedData{ID: c.Param("id"), DeletedAt: time.Now().Format(time.RFC3339)}}
+}
+
+func (mid *Middleware)BeforeCalculateAmountAndVote(c *gin.Context) model.Middleware{
+	token, err := utils.GetTokenFromHeader(c)
+	if err != nil {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check format token
+	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	if checked != true {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check expired token
+	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	if checkedExpired == true {
+		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
+	}
+	var payload model.Payload
+	secretKey  := string(config.GetSecretKey())
+	raw, _ := auth.Decode(token, secretKey)
+	err = json.Unmarshal(raw, &payload)
+	if err != nil {
+		return model.Middleware{StatusCode: 500, Message: "Hệ thống có sự cố"}
+	}
+	// check xem owner co so huu bai nay hay khong
+	var parking model.Parking
+	var parkingIface mysql.ParkingDAO
+	parkingIface = mid.DAO
+	parking, err = parkingIface.FindParkingByID(c.Param("id"))
+	if err != nil {
+		if err.Error() == "record not found" {
+			return model.Middleware{StatusCode: 404, Message: "Bãi đỗ này không tồn tại"}
+		}
+		return model.Middleware{StatusCode: 500, Message: "Hệ thống có sự cố"}
+	}
+	if parking.OwnerId != payload.UserId {
+		return model.Middleware{StatusCode:403, Message: "Bạn không sở hữu bãi đỗ này"}
+	}
+	return model.Middleware{Data: c.Param("id")}
+}

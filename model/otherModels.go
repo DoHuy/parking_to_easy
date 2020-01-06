@@ -94,26 +94,6 @@ type SuccessMessage struct {
 	Message	string		`json:"message"`
 }
 
-type ApprovedParkingResp struct {
-	ParkingName			string		`json:"parkingName,omitempty"`
-	Properties			string		`json:"properties,omitempty"`
-	Address				string		`json:"address,omitempty"`
-	KindOf				bool		`json:"kindOf,omitempty"`
-	ParkingImages 		string		`json:"parkingImages,omitempty"`
-	Payment				string		`gorm:"column:payment" json:"payment,omitempty"`
-	Longitude			string		`gorm:"column:longitude" json:"longitude,omitempty"`
-	Latitude			string		`gorm:"column:latitude" json:"latitude,omitempty"`
-	Capacity			string		`gorm:"column:capacity" json:"capacity,omitempty"`
-	BlockAmount			int			`gorm:"column:blockAmount" json:"blockAmount,omitempty"`
-	OwnerId				int			`gorm:"column:ownerId" json:"ownerId,omitempty"`
-	CertificateOfLand	string		`gorm:"column:certificateOfLand" json:"certificateOfLand,omitempty"`
-	CreatedAt			string		`gorm:"column:created_at" json:"created_at,omitempty"`
-	ModifiedAt 			string		`gorm:"column:modified_at" json:"modified_at,omitempty"`
-	DeletedAt 			string		`gorm:"column:deleted_at" json:"deleted_at,omitempty"`
-	Describe			string		`gorm:"column:describe" json:"describe,omitempty"`
-	Status				string		`gorm:"column:status" json:"status,omitempty"`
-}
-
 type CalculateAmountParkingResp struct {
 	Points	string	`json:"points"`
 	Stars	string	`json:"stars"`

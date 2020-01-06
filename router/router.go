@@ -14,12 +14,12 @@ func InitRouter(router *gin.Engine, con *controller.Controller) {
 	router.GET("/api/admin/get/all/parkings/:limit/:offset", con.GetAllParkings) //done
 	router.GET("/api/owner/get/all/parkings", con.GetAllParkingsOfOwner)//done con phai sua
 	router.GET("/api/get/parking/:parkingId", con.FindParkingByID) //done
-	router.GET("/api/list/nearParking/with/radius/:rad", con.ListNearParking)
+	router.GET("/api/recommend/parking/radius/:rad", con.RecommendParking)
 	// Cập nhật thông tin bãi xe
-	router.POST("/api/admin/verify/parking/:id", con.VerifyParking) // chua xong
-	router.PUT("/api/owner/modify/parking/:id", con.ModifyParkingOfOwner)
-	router.PUT("/api/owner/remove/parking/:id", con.RemoveParkingOfOwner)
-	router.GET("/api/calculate/amount/parking/:id", con.CalculateAmountParking)
+	router.PATCH("/api/admin/verify/parking/:id", con.VerifyParking) // done
+	router.PUT("/api/owner/modify/parking/:id", con.ModifyParkingByOwner) // chua test
+	router.DELETE("/api/owner/remove/parking/:id", con.RemoveParkingOfOwner) //chua test
+	router.GET("/api/calculate/amount/parking/:id", con.CalculateAmountParking)//chua test
 	// Login
 	router.POST("/api/login", con.Login)//done
 	// credential
@@ -31,7 +31,7 @@ func InitRouter(router *gin.Engine, con *controller.Controller) {
 	router.GET("/api/admin/get/all/owners/:limit/:offset", con.GetAllOwners) // done
 	router.GET("/api/get/owner/:id", con.GetOwnerById)//done
 	router.POST("/api/create/owner", con.CreateNewOwner)//done
-	router.PUT("/api/admin/disable/owner/:id", con.DisableOwner)
+	router.PUT("/api/admin/disable/owner/:id", con.DisableOwner) // chua test
 	// transaction
 	router.POST("/api/user/create/transaction", con.CreateNewTransaction)
 	router.GET("/api/user/get/all/transaction", con.GetAllTransactionOfUser)

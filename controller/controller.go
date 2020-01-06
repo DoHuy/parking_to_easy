@@ -6,9 +6,9 @@ import (
 	"github.com/DoHuy/parking_to_easy/auth"
 	"github.com/DoHuy/parking_to_easy/config"
 	"github.com/DoHuy/parking_to_easy/middleware"
+	"github.com/DoHuy/parking_to_easy/model"
 	"github.com/DoHuy/parking_to_easy/mysql"
 	"github.com/DoHuy/parking_to_easy/utils"
-	"github.com/DoHuy/parking_to_easy/model"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"path/filepath"
@@ -125,14 +125,42 @@ func (con *Controller) GetAllParkingsOfOwner(c *gin.Context) {
 	return
 }
 
-func (con *Controller) ListNearParking(c *gin.Context) {
+func (con *Controller) RecommendParking(c *gin.Context) {
 
 }
-func (con *Controller) ModifyParkingOfOwner(c *gin.Context) {
-
+func (con *Controller) ModifyParkingByOwner(c *gin.Context) {
+	var middle model.Middleware
+	middle = con.Middleware.BeforeModifyParkingByOwner(c)
+	if middle.StatusCode != 0 {
+		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
+		return
+	}
+	var parkingIface mysql.ParkingDAO
+	parkingIface = con.DAO
+	err := parkingIface.ModifyParking(middle.Data)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message:"Hệ thống có sự cố"})
+		return
+	}
+	c.JSON(http.StatusOK, model.SuccessMessage{Message: "Cập nhật thông tin bãi đỗ thành công"})
+	return
 }
 func (con *Controller) RemoveParkingOfOwner(c *gin.Context) {
-
+	var middle model.Middleware
+	middle = con.Middleware.BeforeDeleteParkingByOwner(c)
+	if middle.StatusCode != 0 {
+		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
+		return
+	}
+	var parkingIface mysql.ParkingDAO
+	parkingIface = con.DAO
+	err := parkingIface.DeleteParking(middle.Data)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message:"Hệ thống có sự cố"})
+		return
+	}
+	c.JSON(http.StatusOK, model.SuccessMessage{Message: "Xóa bãi đỗ thành công"})
+	return
 }
 
 func (con *Controller) GetAllOwners(c *gin.Context) {
@@ -156,7 +184,21 @@ func (con *Controller) GetAllOwners(c *gin.Context) {
 }
 
 func (con *Controller) DisableOwner(c *gin.Context) {
-
+	var middle model.Middleware
+	middle = con.Middleware.BeforeDisableOwner(c)
+	c.Header("Access-Control-Allow-Origin", "*")
+	if middle.StatusCode != 0 {
+		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
+		return
+	}
+	var ownerIface = con.DAO
+	err := ownerIface.ChangeStatusOwner(middle.Data)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message:"Vô hiệu hóa thất bại, hệ thống có sự cố"})
+		return
+	}
+	c.JSON(http.StatusOK, model.SuccessMessage{Message:"Vô hiệu hóa thành công"})
+	return
 }
 func (con *Controller) CreateNewTransaction(c *gin.Context) {
 
@@ -360,10 +402,6 @@ func (con *Controller) GetOwnerById(c *gin.Context) {
 	return
 }
 
-func (con *Controller) ModifyOwnParking(c *gin.Context) {
-
-}
-
 func (con *Controller) GetAllUsers(c *gin.Context) {
 	// Before GetAllUser
 	var middle model.Middleware
@@ -444,23 +482,24 @@ func (con *Controller) CreateNewOwner(c *gin.Context) {
 }
 
 func (con *Controller) CalculateAmountParking(c *gin.Context) {
-	//var middle model.Middleware
-	//middle = middleware.BeforeCalculateAmountParking(c)
-	//if middle.StatusCode != 0 {
-	//	c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
-	//	return
-	//}
-	//var idParking string
-	//raw, _ := json.Marshal(middle.Data)
-	//err := json.Unmarshal(raw, &idParking)
-	//if err != nil {
-	//	c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
-	//	return
-	//}
-	//resp, err := mysql.CalculateAmountParking(idParking)
-	//if err != nil {
-	//		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
-	//	}
-	//c.JSON(http.StatusOK, resp)
+	var middle model.Middleware
+	middle = con.Middleware.BeforeCalculateAmountParking(c)
+	if middle.StatusCode != 0 {
+		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
+		return
+	}
+	var ratingIface mysql.RatingDAO
+	ratingIface = con.DAO
+	var transactionIface mysql.TransactionDAO
+	transactionIface = con.DAO
+	points, err := transactionIface.CalTotalAmountOfParking(c.Param("id"))
+	stars, err 	:= ratingIface.AverageStarsOfParking(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
+		return
+	}
+	starString := fmt.Sprintf("%.2f", stars)
+	c.JSON(http.StatusOK, model.CalculateAmountParkingResp{Points: string(points), Stars: starString})
 	return
 }
+

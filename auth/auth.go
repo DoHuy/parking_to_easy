@@ -9,17 +9,19 @@ import (
 	redis2 "github.com/DoHuy/parking_to_easy/redis"
 	"time"
 )
-type Auth struct{
-	Redis	*redis2.Redis
+
+type Auth struct {
+	Redis *redis2.Redis
 }
+
 // singleton init a instance redis
-func NewAuth() *Auth{
+func NewAuth() *Auth {
 	redis := redis2.NewRedis()
 	return &Auth{Redis: redis,}
 }
 
-func (this *Auth)CheckTokenIsTrue(token string) (bool, error) {
-	secretKey  := string(config.GetSecretKey())
+func (this *Auth) CheckTokenIsTrue(token string) (bool, error) {
+	secretKey := string(config.GetSecretKey())
 	_, err := Decode(token, secretKey)
 	if err != nil {
 		return false, fmt.Errorf("%s", err.Error())
@@ -27,8 +29,8 @@ func (this *Auth)CheckTokenIsTrue(token string) (bool, error) {
 	return true, nil
 }
 
-func (this *Auth)CheckExpiredToken(token string) (bool, error, error) { //done neu expired thi return true
-	secretKey    := string(config.GetSecretKey())
+func (this *Auth) CheckExpiredToken(token string) (bool, error, error) { //done neu expired thi return true
+	secretKey := string(config.GetSecretKey())
 	var payload model.Payload
 	decoded, err := Decode(token, secretKey)
 	json.Unmarshal(decoded, &payload)
@@ -36,10 +38,7 @@ func (this *Auth)CheckExpiredToken(token string) (bool, error, error) { //done n
 	if err != nil {
 		return true, nil, fmt.Errorf("Lỗi trên hệ thống: %s", err.Error())
 	}
-	//fmt.Println("Payload trong midd:   ", payload)
-	//fmt.Println("time::::::", time.Now().UnixNano()/1000000, expired.UnixNano() / 1000000, time.Now().UnixNano()/ 1000000> expired.UnixNano() / 1000000)
-	fmt.Println("time::::::", -time.Now().UnixNano()/1000000 + expired.UnixNano()/1000000)
-	if expired.UnixNano() / 1000000 - time.Now().UnixNano() / 1000000 >= 0 {
+	if expired.UnixNano()/1000000-time.Now().UnixNano()/1000000 >= 0 {
 		return false, nil, nil
 	}
 
@@ -48,15 +47,15 @@ func (this *Auth)CheckExpiredToken(token string) (bool, error, error) { //done n
 }
 
 // authenticate user login return token and error
-func (this *Auth)Authenticate(credential model.Credential, credIFace mysql.CredentialDAO)  (string, error, error){
+func (this *Auth) Authenticate(credential model.Credential, credIFace mysql.CredentialDAO) (string, error, error) {
 	var err error
 	credential, err = credIFace.FindCredentialByNameAndPassword(credential.Username, credential.Password)
 	if err != nil {
 		return "", fmt.Errorf("username hoặc password không đúng"), nil
 	}
 	// lay secret key cho viec giai ma token
-	secretKey  		:= string(config.GetSecretKey())
-	jwtModel, err 	:= this.Redis.GetJWTTokenFromRedis(credential.Username)
+	secretKey := string(config.GetSecretKey())
+	jwtModel, err := this.Redis.GetJWTTokenFromRedis(credential.Username)
 	fmt.Println("asdadasd roleeeee", credential.Role)
 	// Neu user chua co token, Tạo mới token lưu vào redis và mysql
 	expiredDuration := time.Minute * time.Duration(config.GetTokenExpired())
@@ -104,7 +103,7 @@ func (this *Auth)Authenticate(credential model.Credential, credIFace mysql.Crede
 }
 
 // accept or reject api calling
-func (this *Auth)Authorize(params ... string) (string, error, error){
+func (this *Auth) Authorize(params ...string) (string, error, error) {
 	secret := string(config.GetSecretKey())
 	decoded, err := Decode(params[0], secret)
 	if err != nil {
@@ -114,7 +113,7 @@ func (this *Auth)Authorize(params ... string) (string, error, error){
 	err = json.Unmarshal(decoded, &payload)
 
 	switch len(params) {
-	
+
 	}
 	if err != nil {
 		return "", fmt.Errorf("Hệ thống có sự cố"), err
