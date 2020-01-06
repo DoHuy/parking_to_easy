@@ -2,39 +2,47 @@ package router
 
 import (
 	"github.com/DoHuy/parking_to_easy/controller"
-	"github.com/gomodule/redigo/redis"
-
-	//"github.com/DoHuy/parking_to_easy/middleware"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 )
 
-func InitRouter(router *gin.Engine, conn *gorm.DB, redisPool *redis.Pool) {
-	// khoi tao middleware
-	//middleware := middleware.NewMiddleware(conn)
-	//khoi tao conntroller
-	controller := controller.NewController(conn, redisPool)
+func InitRouter(router *gin.Engine, con *controller.Controller) {
 	// Tạo mới bãi đẫu xe
-	router.GET("/api/get/parking/:parkingId", controller.FindParkingByID)
-	router.GET("/api/get/all/parkings/:limit/:offset", controller.GetAllParkings)
-	router.POST("/api/user/create/parking", controller.CreateNewParking)
-	router.POST("/api/admin/create/parking", controller.CreateNewParkingByAdmin)
-	router.PUT("/api/admin/check/parking/:id", controller.CheckParking)
-	router.PUT("/api/modify/parking/:id", controller.ModifyParking)
-	//router.PUT("/api/remove/parking/:id", controller)
-	// Credential
-	router.POST("/api/register", controller.Register)
-	router.POST("/api/login", controller.Login)
-	router.GET("/api/get/all/users", controller.GetAllUsers)
-	//
+	router.POST("/api/admin/create/parking", con.CreateNewParkingByAdmin) //done
+	router.POST("/api/user/share/parking", con.CreateNewParkingByOwner) //done
+	// Lấy thông tin bãi đậu xe
+	router.GET("/api/get/all/approved/parkings", con.GetAllApprovedParkings) //done
+	router.GET("/api/admin/get/all/parkings/:limit/:offset", con.GetAllParkings) //done
+	router.GET("/api/owner/get/all/parkings", con.GetAllParkingsOfOwner)//done con phai sua
+	router.GET("/api/get/parking/:parkingId", con.FindParkingByID) //done
+	router.GET("/api/list/nearParking/with/radius/:rad", con.ListNearParking)
+	// Cập nhật thông tin bãi xe
+	router.POST("/api/admin/verify/parking/:id", con.VerifyParking) // chua xong
+	router.PUT("/api/owner/modify/parking/:id", con.ModifyParkingOfOwner)
+	router.PUT("/api/owner/remove/parking/:id", con.RemoveParkingOfOwner)
+	router.GET("/api/calculate/amount/parking/:id", con.CalculateAmountParking)
+	// Login
+	router.POST("/api/login", con.Login)//done
+	// credential
+	router.POST("/api/register", con.Register) // done
+	router.GET("/api/get/all/users/:limit/:offset", con.GetAllUsers) // done
+	router.GET("/api/get/detail/profile", con.GetDetailUser)  // done
 
-	////////////////////////
-	// Owner
-	router.POST("/api/get/owner/:id", controller.GetDetailOwner)
-	//
+	//owner
+	router.GET("/api/admin/get/all/owners/:limit/:offset", con.GetAllOwners) // done
+	router.GET("/api/get/owner/:id", con.GetOwnerById)//done
+	router.POST("/api/create/owner", con.CreateNewOwner)//done
+	router.PUT("/api/admin/disable/owner/:id", con.DisableOwner)
+	// transaction
+	router.POST("/api/user/create/transaction", con.CreateNewTransaction)
+	router.GET("/api/user/get/all/transaction", con.GetAllTransactionOfUser)
+	router.GET("/api/admin/get/all/transaction", con.GetAllTransaction)
+	router.PATCH("/api/decline/transaction/:id", con.DeclineTransaction)
+	router.PATCH("/api/accept/transaction/:id", con.AcceptTransaction)
 	////////////////////////
 	// Upload nhieu file
-	//router.Use(middleware.BeforeUploadFiles())
-	router.POST("/api/files/upload", controller.UploadFiles)
+	router.POST("/api/files/upload", con.UploadFiles) // done
+	/// rating
+	router.POST("/api/rating/parking", con.RatingParking)
+	router.GET("/analysis/metric/all/parkings", con.AnalysisAllParkings)
 	return
 }
