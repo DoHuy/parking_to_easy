@@ -8,9 +8,18 @@ import(
 	"github.com/DoHuy/parking_to_easy/config"
 )
 // init singleton instance redis
-var pool *redis.Pool
+type Redis struct {
+	pool	*redis.Pool
+}
 
-func InitPoolConnectionRedis() *redis.Pool{
+func NewRedis() *Redis{
+	var pool *redis.Pool
+	pool = initPoolConnectionRedis()
+	return &Redis{pool: pool}
+}
+
+func initPoolConnectionRedis() *redis.Pool {
+	var pool *redis.Pool
 	var redisConfig model.Redis
 	redisConfig = config.GetConfigRedis()
 	pool = &redis.Pool{
@@ -23,9 +32,10 @@ func InitPoolConnectionRedis() *redis.Pool{
 	return pool
 }
 
+
 // thêm 1 token vào trong redis hoặc ghi đè token trong reddis
-func SetJWTTokenToRedis(key, jwt string) error{
-	conn := pool.Get()
+func (this *Redis)SetJWTTokenToRedis(key, jwt string) error{
+	conn := this.pool.Get()
 	var redisConfig model.Redis
 	redisConfig = config.GetConfigRedis()
 	_, err := conn.Do("HMSET", redisConfig.Topic[0], key, jwt)
@@ -36,8 +46,21 @@ func SetJWTTokenToRedis(key, jwt string) error{
 	return nil
 }
 
-func GetJWTTokenFromRedis(key string) (model.JWTOfUser, error){
-	conn := pool.Get()
+func (this *Redis)DelJWTToken(key string) error{
+	conn := this.pool.Get()
+	var redisConfig model.Redis
+	redisConfig = config.GetConfigRedis()
+	_, err := conn.Do("HDEL", redisConfig.Topic[0], key)
+	if err != nil {
+		return fmt.Errorf("Lỗi xóa dữ liệu trong redis", err)
+	}
+	fmt.Println("Co chay ao HDEL")
+	defer conn.Close()
+	return nil
+}
+
+func (this *Redis)GetJWTTokenFromRedis(key string) (model.JWTOfUser, error){
+	conn := this.pool.Get()
 	defer conn.Close()
 	var redisConfig model.Redis
 	redisConfig = config.GetConfigRedis()
@@ -48,8 +71,8 @@ func GetJWTTokenFromRedis(key string) (model.JWTOfUser, error){
 	return model.JWTOfUser{Key: key, Jwt: jwt}, nil
 }
 
-func SetDevicesTokenToRedis(key string, tokenDevice string) error {
-	conn := pool.Get()
+func (this *Redis)SetDevicesTokenToRedis(key string, tokenDevice string) error {
+	conn := this.pool.Get()
 	var redisConfig model.Redis
 	redisConfig = config.GetConfigRedis()
 	_, err := conn.Do("HMSET", redisConfig.Topic[1], key, tokenDevice)
@@ -60,7 +83,7 @@ func SetDevicesTokenToRedis(key string, tokenDevice string) error {
 	return nil
 }
 
-func GetAllTokenDevicesFromRedis(){
+func (this *Redis)GetAllTokenDevicesFromRedis(){
 
 }
 
