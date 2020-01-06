@@ -16,5 +16,5 @@
     "topic": ["JWT", "DEVICES"],
     "networks": "tcp"
   },
-  "token_expired": 3600000
+  "token_expired": 10000
 }
