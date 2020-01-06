@@ -1,8 +1,10 @@
 package main
 
 import (
+	auth2 "github.com/DoHuy/parking_to_easy/auth"
+	controller2 "github.com/DoHuy/parking_to_easy/controller"
+	middleware2 "github.com/DoHuy/parking_to_easy/middleware"
 	"github.com/DoHuy/parking_to_easy/mysql"
-	"github.com/DoHuy/parking_to_easy/redis"
 	"github.com/DoHuy/parking_to_easy/router"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
@@ -13,11 +15,13 @@ func main() {
 	r := gin.Default()
 	static_path, _ := filepath.Abs("./")
 	r.Use(static.Serve("/", static.LocalFile(filepath.Join(static_path, "resource/images"), false)))
-	connection, err := mysql.ConnectDatabase()
-	redisPool := redis.InitPoolConnectionRedis()
+	auth := auth2.NewAuth()
+	dao, err := mysql.NewDAO()
 	if err != nil {
-		panic("Lỗi kết nối database !")
+		panic(err.Error())
 	}
-	router.InitRouter(r, connection, redisPool)
+	middleware := middleware2.NewMiddleware(dao, auth)
+	controller:= controller2.NewController(dao, middleware, auth)
+	router.InitRouter(r, controller)
 	r.Run(":8085")
 }
