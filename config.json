@@ -3,7 +3,7 @@
     "username": "root",
     "password": "123",
     "database_name": "parkings",
-    "address": "localhost:8881"
+    "address": "localhost:3306"
   },
   "secret_key": "abcdef123456789",
   "max_uploaded_file_size": 100000,

@@ -10,13 +10,13 @@ services:
     networks:
       - backend
   redis:
-    image: redis:5.0.7-alpine
+    image: redis:latest
     networks:
       - backend
   api:
     build: .
     ports:
-      - "119.17.214.120:8124:8085"
+      - "8124:8085"
     networks:
       - backend
     depends_on: #cho db start trc
