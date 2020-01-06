@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"github.com/DoHuy/parking_to_easy/model"
 	"strings"
-	"time"
 )
 
 
@@ -82,11 +81,6 @@ func Decode(jwt string, secret string) ([]byte, error) {
 	ParseErr := json.Unmarshal([]byte(decodedPayload), &payload)
 	if ParseErr != nil {
 		return nil, fmt.Errorf("Invalid payload: %s", ParseErr.Error())
-	}
-	// checks if the token has expired.
-	expired, _ := time.Parse(time.RFC3339, payload.Expired)
-	if time.Now().Unix() > expired.Unix() {
-		return nil, errors.New("Expired token: token has expired")
 	}
 	signatureValue := token[0] + "." + token[1]
 	// verifies if the header and signature is exactly whats in
