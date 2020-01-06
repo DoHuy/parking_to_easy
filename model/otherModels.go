@@ -26,7 +26,6 @@ type ModifyingParkingResp struct {
 	BlockAmount		int			`json:"block_amount,omitempty"`
 	CreatedAt		string		`json:"created_at,omitempty"`
 	ModifiedAt 		string		`json:"modified_at,omitempty"`
-	DeletedAt 		string		`json:"deleted_at,omitempty"`
 	Describe		string		`json:"describe,omitempty"`
 	Status			string		`json:"status,omitempty"`
 }
@@ -44,9 +43,29 @@ type ParkingResp struct {
 	BlockAmount		int			`json:"block_amount,omitempty"`
 	CreatedAt		string		`json:"created_at,omitempty"`
 	ModifiedAt 		string		`json:"modified_at,omitempty"`
-	DeletedAt 		string		`json:"deleted_at,omitempty"`
 	Describe		string		`json:"describe,omitempty"`
 	Status			string		`json:"status,omitempty"`
 }
 
+type RegisterResp struct {
+	Message	string		`json:"message"`
+}
 
+type LoginMessageResp struct {
+	Token string	`json:"token"`
+}
+
+type ErrorMessage struct {
+	Message			string		`json:"error_message"`
+	RawMessage		string		`json:"raw_message,omitempty"`
+}
+
+type VerifyingParkingResp struct {
+	Message			string		`json:"message"`
+	Parking			ParkingResp	`json:"parking"`
+}
+type Middleware struct {
+	StatusCode	int			`json:"status_code"`
+	Message		string		`json:"message"`
+	Data		interface{}	`json:"data"`
+}
