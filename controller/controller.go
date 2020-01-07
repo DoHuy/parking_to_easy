@@ -29,6 +29,18 @@ func NewController(dao *mysql.DAO, middleware *middleware.Middleware, auth *auth
 	}
 }
 
+func (con *Controller)Options(c *gin.Context) {
+	if c.Request.Method != "OPTIONS" {
+		c.Next()
+	} else {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "authorization, origin, content-type, accept")
+		c.Header("Allow", "HEAD,GET,POST,PUT,PATCH,DELETE,OPTIONS")
+		c.Header("Content-Type", "application/json")
+		c.AbortWithStatus(http.StatusOK)
+	}
+}
 // Bai dau xe
 func (con *Controller) CreateNewParkingByAdmin(c *gin.Context) {
 	// Before create
@@ -204,10 +216,43 @@ func (con *Controller) CreateNewTransaction(c *gin.Context) {
 
 }
 func (con *Controller) GetAllTransactionOfUser(c *gin.Context) {
-
+	var middle model.Middleware
+	middle = con.Middleware.BeforeGetAllTransactionOfUser(c)
+	if middle.StatusCode != 0 {
+		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
+		return
+	}
+	var transactionIface mysql.TransactionDAO
+	transactionIface = con.DAO
+	transactions, err := transactionIface.FindTransactionOfUser(middle.Data)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
+		return
+	}
+	if len(transactions) == 0 {
+		c.JSON(http.StatusNotFound, model.ErrorMessage{Message: "Bạn chưa thực hiện một giao dịch nào"})
+		return
+	}
+	c.JSON(http.StatusOK, transactions)
+	return
 }
 func (con *Controller) GetAllTransaction(c *gin.Context) {
+	var middle model.Middleware
+	middle = con.Middleware.BeforeGetAllTransaction(c)
+	if middle.StatusCode != 0 {
+		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
+		return
+	}
+	var transactionIface mysql.TransactionDAO
+	transactionIface = con.DAO
+	transactions, err := transactionIface.FindAllTransaction()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
+		return
 
+	}
+	c.JSON(http.StatusOK, transactions)
+	return
 }
 func (con *Controller) DeclineTransaction(c *gin.Context) {
 

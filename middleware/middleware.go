@@ -109,7 +109,7 @@ func (mid *Middleware)BeforeLogin(c *gin.Context) model.Middleware {
 func (mid *Middleware)BeforeGetAllUsers(c *gin.Context) model.Middleware {
 	token, err := utils.GetTokenFromHeader(c)
 	fmt.Println("token", token)
-	c.Header("Access-Control-Allow-Origin", "*")
+	//c.Header("Access-Control-Allow-Origin", "*")
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
@@ -581,4 +581,59 @@ func (mid *Middleware)BeforeCalculateAmountAndVote(c *gin.Context) model.Middlew
 		return model.Middleware{StatusCode:403, Message: "Bạn không sở hữu bãi đỗ này"}
 	}
 	return model.Middleware{Data: c.Param("id")}
+}
+
+func (mid *Middleware)BeforeGetAllTransactionOfUser(c *gin.Context) model.Middleware{
+	token, err := utils.GetTokenFromHeader(c)
+	if err != nil {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check format token
+	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	if checked != true {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check expired token
+	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	if checkedExpired == true {
+		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
+	}
+	var payload model.Payload
+	secretKey  := string(config.GetSecretKey())
+	raw, _ := auth.Decode(token, secretKey)
+	err = json.Unmarshal(raw, &payload)
+	if err != nil {
+		return model.Middleware{StatusCode: 500, Message: "Hệ thống có sự cố"}
+	}
+
+	return model.Middleware{Data: payload.UserId}
+}
+
+func (mid *Middleware)BeforeGetAllTransaction(c *gin.Context)model.Middleware{
+	token, err := utils.GetTokenFromHeader(c)
+	if err != nil {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check format token
+	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	if checked != true {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check expired token
+	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	if checkedExpired == true {
+		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
+	}
+
+	var payload model.Payload
+	secretKey  := string(config.GetSecretKey())
+	raw, _ := auth.Decode(token, secretKey)
+	err = json.Unmarshal(raw, &payload)
+	if err != nil {
+		return model.Middleware{StatusCode: 500, Message: "Hệ thống có sự cố"}
+	}
+	if payload.Role == "admin" {
+		return model.Middleware{StatusCode: 503, Message: "Dịch vụ không sẵn có"}
+	}
+	return model.Middleware{}
 }

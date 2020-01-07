@@ -6,6 +6,7 @@ import (
 )
 
 func InitRouter(router *gin.Engine, con *controller.Controller) {
+	router.Use(con.Options)
 	// Tạo mới bãi đẫu xe
 	router.POST("/api/admin/create/parking", con.CreateNewParkingByAdmin) //done
 	router.POST("/api/user/share/parking", con.CreateNewParkingByOwner) //done
@@ -34,8 +35,8 @@ func InitRouter(router *gin.Engine, con *controller.Controller) {
 	router.PUT("/api/admin/disable/owner/:id", con.DisableOwner) // chua test
 	// transaction
 	router.POST("/api/user/create/transaction", con.CreateNewTransaction)
-	router.GET("/api/user/get/all/transaction", con.GetAllTransactionOfUser)
-	router.GET("/api/admin/get/all/transaction", con.GetAllTransaction)
+	router.GET("/api/user/get/all/transaction", con.GetAllTransactionOfUser) // chua test
+	router.GET("/api/admin/get/all/transaction", con.GetAllTransaction) // chua test
 	router.PATCH("/api/decline/transaction/:id", con.DeclineTransaction)
 	router.PATCH("/api/accept/transaction/:id", con.AcceptTransaction)
 	////////////////////////
