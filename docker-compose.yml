@@ -9,6 +9,11 @@ services:
       - "6379:6379"
     volumes:
       - /home/dohuy171/migration:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: parkings
+      MYSQL_USER: root
+      MYSQL_PASSWORD: 123
+      MYSQL_ROOT_PASSWORD: 123
     networks:
       - backend
   redis:
