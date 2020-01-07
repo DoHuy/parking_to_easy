@@ -1,7 +1,7 @@
 {
   "database": {
     "username": "root",
-    "password": "",
+    "password": "123",
     "database_name": "parkings",
     "address": "localhost:8881"
   },
