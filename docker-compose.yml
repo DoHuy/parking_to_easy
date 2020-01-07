@@ -6,7 +6,7 @@ services:
     image: mysql:latest
     container_name: database
     ports:
-      - "6379:6379"
+      - "3306:3306"
     volumes:
       - /home/dohuy171/migration:/var/lib/mysql
     environment:
