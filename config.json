@@ -3,10 +3,10 @@
     "username": "root",
     "password": "",
     "database_name": "parkings",
-    "address": "localhost:3306"
+    "address": "localhost:8881"
   },
   "secret_key": "abcdef123456789",
-  "max_uploaded_file_size": 100000,
+  "max_uploaded_file_size":  100000,
   "environment": {
     "hostname": "localhost",
     "port": "8085"
