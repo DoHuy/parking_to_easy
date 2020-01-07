@@ -12,7 +12,7 @@
     "port": "8085"
   },
   "redis": {
-    "address": "redis:6379",
+    "address": "rds:6379",
     "topic": ["JWT", "DEVICES"],
     "networks": "tcp"
   },
