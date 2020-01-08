@@ -1,5 +1,6 @@
 package model
 
+
 type CheckingParkingResp struct {
 	Message string 	`json:"message"`
 }
@@ -98,4 +99,5 @@ type CalculateAmountParkingResp struct {
 	Points	string	`json:"points"`
 	Stars	string	`json:"stars"`
 }
+
 

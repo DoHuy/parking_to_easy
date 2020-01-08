@@ -91,6 +91,7 @@ func (db *DAO)GetAllParking() ([]model.Parking, error) {
 	if len(parkings) == 0 {
 		return parkings, fmt.Errorf("records not found")
 	}
+	//fmt.Println("sdasdsd", parkings)
 	return parkings, nil
 }
 

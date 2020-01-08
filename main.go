@@ -1,11 +1,9 @@
 package main
 
 import (
-	auth2 "github.com/DoHuy/parking_to_easy/auth"
-	controller2 "github.com/DoHuy/parking_to_easy/controller"
-	middleware2 "github.com/DoHuy/parking_to_easy/middleware"
+	auth2 "github.com/DoHuy/parking_to_easy/business_logic/auth"
+	"github.com/DoHuy/parking_to_easy/http"
 	"github.com/DoHuy/parking_to_easy/mysql"
-	"github.com/DoHuy/parking_to_easy/router"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"path/filepath"
@@ -20,8 +18,9 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	middleware := middleware2.NewMiddleware(dao, auth)
-	controller:= controller2.NewController(dao, middleware, auth)
-	router.InitRouter(r, controller)
+	middleware := http.NewMiddleware(dao, auth)
+	controller:= http.NewControllingService(dao, middleware, auth)
+	routingService := http.NewService(r, controller)
+	routingService.Init()
 	r.Run(":8085")
 }

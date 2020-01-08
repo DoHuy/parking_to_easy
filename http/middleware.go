@@ -1,4 +1,4 @@
-package middleware
+package http
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	//"errors"
-	"github.com/DoHuy/parking_to_easy/auth"
+	"github.com/DoHuy/parking_to_easy/business_logic/auth"
 	"github.com/DoHuy/parking_to_easy/utils"
 
 	//"fmt"
@@ -23,19 +23,20 @@ import (
 	//"time"
 )
 
-type Middleware struct {
+type MiddleWareService struct {
 	DAO		*mysql.DAO
 	Auth	*auth.Auth
 }
 // api Upload
-func NewMiddleware(dao *mysql.DAO, auth *auth.Auth) *Middleware {
-	return &Middleware{
+func NewMiddleware(dao *mysql.DAO, auth *auth.Auth) *MiddleWareService {
+
+	return &MiddleWareService{
 		DAO: dao,
 		Auth: auth,
 	}
 }
 
-func (mid *Middleware)BeforeUpload(c *gin.Context, token string) model.Middleware {
+func (mid *MiddleWareService)BeforeUpload(c *gin.Context, token string) model.Middleware {
 	// check is True token,  expired token
 	checked, err := mid.Auth.CheckTokenIsTrue(token)
 	if checked == false && err != nil {
@@ -57,7 +58,7 @@ func (mid *Middleware)BeforeUpload(c *gin.Context, token string) model.Middlewar
 }
 
 //api Register
-func (mid *Middleware)BeforeRegister(c *gin.Context) model.Middleware {
+func (mid *MiddleWareService)BeforeRegister(c *gin.Context) model.Middleware {
 	var credential model.Credential
 	cred := utils.GetBodyRequest(c)
 	err := json.Unmarshal(cred, &credential)
@@ -90,7 +91,7 @@ func (mid *Middleware)BeforeRegister(c *gin.Context) model.Middleware {
 	return model.Middleware{Data: credential}
 }
 // Before login
-func (mid *Middleware)BeforeLogin(c *gin.Context) model.Middleware {
+func (mid *MiddleWareService)BeforeLogin(c *gin.Context) model.Middleware {
 	raw := utils.GetBodyRequest(c)
 	var credential model.Credential
 	err := json.Unmarshal(raw, &credential)
@@ -106,7 +107,7 @@ func (mid *Middleware)BeforeLogin(c *gin.Context) model.Middleware {
 	return model.Middleware{Data: credential}
 }
 // api get all users
-func (mid *Middleware)BeforeGetAllUsers(c *gin.Context) model.Middleware {
+func (mid *MiddleWareService)BeforeGetAllUsers(c *gin.Context) model.Middleware {
 	token, err := utils.GetTokenFromHeader(c)
 	fmt.Println("token", token)
 	//c.Header("Access-Control-Allow-Origin", "*")
@@ -135,7 +136,7 @@ func (mid *Middleware)BeforeGetAllUsers(c *gin.Context) model.Middleware {
 }
 
 //api get detail user
-func (mid *Middleware)BeforeGetDetailUser(c *gin.Context) model.Middleware {
+func (mid *MiddleWareService)BeforeGetDetailUser(c *gin.Context) model.Middleware {
 	token, err := utils.GetTokenFromHeader(c)
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
@@ -161,7 +162,7 @@ func (mid *Middleware)BeforeGetDetailUser(c *gin.Context) model.Middleware {
 	return model.Middleware{Data: payload.UserId}
 }
 // before create new parking by admin
-func (mid *Middleware)BeforeCreateNewParkingByAdmin(c *gin.Context) model.Middleware{
+func (mid *MiddleWareService)BeforeCreateNewParkingByAdmin(c *gin.Context) model.Middleware{
 	token, err := utils.GetTokenFromHeader(c)
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
@@ -208,7 +209,7 @@ func (mid *Middleware)BeforeCreateNewParkingByAdmin(c *gin.Context) model.Middle
 
 }
 
-func (mid *Middleware)BeforeCreateNewOwner(c *gin.Context) model.Middleware{
+func (mid *MiddleWareService)BeforeCreateNewOwner(c *gin.Context) model.Middleware{
 	token, err := utils.GetTokenFromHeader(c)
 	if err != nil {
 		fmt.Println("ERR:   ", err)
@@ -250,7 +251,7 @@ func (mid *Middleware)BeforeCreateNewOwner(c *gin.Context) model.Middleware{
 	return model.Middleware{Data: newOwner}
 }
 
-func (mid *Middleware)BeforeCreateNewParkingByOwner(c *gin.Context) model.Middleware{
+func (mid *MiddleWareService)BeforeCreateNewParkingByOwner(c *gin.Context) model.Middleware{
 	token, err := utils.GetTokenFromHeader(c)
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
@@ -289,7 +290,7 @@ func (mid *Middleware)BeforeCreateNewParkingByOwner(c *gin.Context) model.Middle
 	return model.Middleware{Data: newParking}
 }
 
-func (mid *Middleware)BeforeGetOwnerById(c *gin.Context) model.Middleware{
+func (mid *MiddleWareService)BeforeGetOwnerById(c *gin.Context) model.Middleware{
 	token, err := utils.GetTokenFromHeader(c)
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
@@ -318,7 +319,7 @@ func (mid *Middleware)BeforeGetOwnerById(c *gin.Context) model.Middleware{
 	return model.Middleware{Data: c.Param("id")}
 }
 
-func (mid *Middleware)BeforeVerifyParking(c *gin.Context) model.Middleware {
+func (mid *MiddleWareService)BeforeVerifyParking(c *gin.Context) model.Middleware {
 	token, err := utils.GetTokenFromHeader(c)
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
@@ -343,7 +344,7 @@ func (mid *Middleware)BeforeVerifyParking(c *gin.Context) model.Middleware {
 	return model.Middleware{Data: id}
 }
 
-func (mid *Middleware)AfterGetAllParkings(parkings []model.Parking) model.Middleware {
+func (mid *MiddleWareService)AfterGetAllParkings(parkings []model.Parking) model.Middleware {
 	var rs []model.Parking
 	for i := 0 ; i < len(parkings) ; i++ {
 		if parkings[i].Status == "APPROVED" {
@@ -355,7 +356,7 @@ func (mid *Middleware)AfterGetAllParkings(parkings []model.Parking) model.Middle
 	return model.Middleware{Data: rs}
 }
 
-func (mid *Middleware)BeforeCalculateAmountParking(c *gin.Context) model.Middleware{
+func (mid *MiddleWareService)BeforeCalculateAmountParking(c *gin.Context) model.Middleware{
 	token, err := utils.GetTokenFromHeader(c)
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
@@ -398,7 +399,7 @@ func (mid *Middleware)BeforeCalculateAmountParking(c *gin.Context) model.Middlew
 	return model.Middleware{Data: idParking}
 }
 
-func (mid *Middleware)BeforeGetAllOwners(c *gin.Context) model.Middleware{
+func (mid *MiddleWareService)BeforeGetAllOwners(c *gin.Context) model.Middleware{
 	token, err := utils.GetTokenFromHeader(c)
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
@@ -420,7 +421,7 @@ func (mid *Middleware)BeforeGetAllOwners(c *gin.Context) model.Middleware{
 	return model.Middleware{}
 }
 
-func (mid *Middleware)BeforeDisableOwner(c *gin.Context) model.Middleware{
+func (mid *MiddleWareService)BeforeDisableOwner(c *gin.Context) model.Middleware{
 	token, err := utils.GetTokenFromHeader(c)
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
@@ -448,7 +449,7 @@ func (mid *Middleware)BeforeDisableOwner(c *gin.Context) model.Middleware{
 	return model.Middleware{Data:DataStruct{ID: c.Param("id"), Status: "DISABLED", ModifiedAt:time.Now().Format(time.RFC3339)}}
 }
 
-func (mid *Middleware)BeforeModifyParkingByOwner(c *gin.Context) model.Middleware{
+func (mid *MiddleWareService)BeforeModifyParkingByOwner(c *gin.Context) model.Middleware{
 	token, err := utils.GetTokenFromHeader(c)
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
@@ -499,7 +500,7 @@ func (mid *Middleware)BeforeModifyParkingByOwner(c *gin.Context) model.Middlewar
 	return model.Middleware{Data:UpdatedData{ID: c.Param("id"), Capacity: updatedParking.Capacity, ModifiedAt: time.Now().Format(time.RFC3339)}}
 }
 
-func (mid *Middleware)BeforeDeleteParkingByOwner(c *gin.Context) model.Middleware{
+func (mid *MiddleWareService)BeforeDeleteParkingByOwner(c *gin.Context) model.Middleware{
 	token, err := utils.GetTokenFromHeader(c)
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
@@ -544,7 +545,7 @@ func (mid *Middleware)BeforeDeleteParkingByOwner(c *gin.Context) model.Middlewar
 	return model.Middleware{Data:DeletedData{ID: c.Param("id"), DeletedAt: time.Now().Format(time.RFC3339)}}
 }
 
-func (mid *Middleware)BeforeCalculateAmountAndVote(c *gin.Context) model.Middleware{
+func (mid *MiddleWareService)BeforeCalculateAmountAndVote(c *gin.Context) model.Middleware{
 	token, err := utils.GetTokenFromHeader(c)
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
@@ -583,7 +584,7 @@ func (mid *Middleware)BeforeCalculateAmountAndVote(c *gin.Context) model.Middlew
 	return model.Middleware{Data: c.Param("id")}
 }
 
-func (mid *Middleware)BeforeGetAllTransactionOfUser(c *gin.Context) model.Middleware{
+func (mid *MiddleWareService)BeforeGetAllTransactionOfUser(c *gin.Context) model.Middleware{
 	token, err := utils.GetTokenFromHeader(c)
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
@@ -609,7 +610,7 @@ func (mid *Middleware)BeforeGetAllTransactionOfUser(c *gin.Context) model.Middle
 	return model.Middleware{Data: payload.UserId}
 }
 
-func (mid *Middleware)BeforeGetAllTransaction(c *gin.Context)model.Middleware{
+func (mid *MiddleWareService)BeforeGetAllTransaction(c *gin.Context)model.Middleware{
 	token, err := utils.GetTokenFromHeader(c)
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
@@ -634,6 +635,51 @@ func (mid *Middleware)BeforeGetAllTransaction(c *gin.Context)model.Middleware{
 	}
 	if payload.Role == "admin" {
 		return model.Middleware{StatusCode: 503, Message: "Dịch vụ không sẵn có"}
+	}
+	return model.Middleware{}
+}
+
+func (mid *MiddleWareService)BeforeRating(c *gin.Context) model.Middleware{
+	token, err := utils.GetTokenFromHeader(c)
+	if err != nil {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check format token
+	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	if checked != true {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check expired token
+	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	if checkedExpired == true {
+		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
+	}
+	//convert data
+	raw := utils.GetBodyRequest(c)
+	var rating model.Rating
+	err = json.Unmarshal(raw, &rating)
+	if err != nil {
+		return model.Middleware{StatusCode: 400, Message: "Hệ thống có sự cố"}
+	}
+
+	return model.Middleware{Data: rating}
+
+}
+
+func (mid *MiddleWareService)BeforeRecommendParking(c *gin.Context) model.Middleware{
+	token, err := utils.GetTokenFromHeader(c)
+	if err != nil {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check format token
+	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	if checked != true {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check expired token
+	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	if checkedExpired == true {
+		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
 	return model.Middleware{}
 }

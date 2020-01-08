@@ -1,11 +1,10 @@
-package controller
+package http
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/DoHuy/parking_to_easy/auth"
+	"github.com/DoHuy/parking_to_easy/business_logic/auth"
 	"github.com/DoHuy/parking_to_easy/config"
-	"github.com/DoHuy/parking_to_easy/middleware"
 	"github.com/DoHuy/parking_to_easy/model"
 	"github.com/DoHuy/parking_to_easy/mysql"
 	"github.com/DoHuy/parking_to_easy/utils"
@@ -15,21 +14,21 @@ import (
 	"time"
 )
 
-type Controller struct {
+type ControllingService struct {
 	DAO        	*mysql.DAO
-	Middleware 	*middleware.Middleware
+	Middleware 	*MiddleWareService
 	Auth		*auth.Auth
 }
 
-func NewController(dao *mysql.DAO, middleware *middleware.Middleware, auth *auth.Auth) *Controller {
-	return &Controller{
+func NewControllingService(dao *mysql.DAO, middleware *MiddleWareService, auth *auth.Auth) *ControllingService {
+	return &ControllingService{
 		DAO:        dao,
 		Middleware: middleware,
-		Auth: auth,
+		Auth:		auth,
 	}
 }
 
-func (con *Controller)Options(c *gin.Context) {
+func (con *ControllingService)Options(c *gin.Context) {
 	if c.Request.Method != "OPTIONS" {
 		c.Next()
 	} else {
@@ -42,7 +41,7 @@ func (con *Controller)Options(c *gin.Context) {
 	}
 }
 // Bai dau xe
-func (con *Controller) CreateNewParkingByAdmin(c *gin.Context) {
+func (con *ControllingService) CreateNewParkingByAdmin(c *gin.Context) {
 	// Before create
 	var middle model.Middleware
 	middle = con.Middleware.BeforeCreateNewParkingByAdmin(c)
@@ -53,11 +52,11 @@ func (con *Controller) CreateNewParkingByAdmin(c *gin.Context) {
 	// implement
 	var parkingDAOIface mysql.ParkingDAO
 	parkingDAOIface = con.DAO
+	//fmt.Println("middle.Datamiddle.Data", middle.Data)
 	err := parkingDAOIface.CreateNewParkingByAdmin(middle.Data)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{
-			Message:    "Server error",
-			RawMessage: err.Error(),
+			Message:    "Hệ thống có sự cố",
 		})
 		return
 	}
@@ -66,7 +65,7 @@ func (con *Controller) CreateNewParkingByAdmin(c *gin.Context) {
 	return
 }
 
-func (con *Controller) CreateNewParkingByOwner(c *gin.Context) {
+func (con *ControllingService) CreateNewParkingByOwner(c *gin.Context) {
 	// before create
 	var middle model.Middleware
 	middle = con.Middleware.BeforeCreateNewParkingByOwner(c)
@@ -88,7 +87,7 @@ func (con *Controller) CreateNewParkingByOwner(c *gin.Context) {
 
 }
 
-func (con *Controller) GetAllApprovedParkings(c *gin.Context) {
+func (con *ControllingService) GetAllApprovedParkings(c *gin.Context) {
 	var parkings []model.Parking
 	var err error
 	// implement
@@ -106,12 +105,21 @@ func (con *Controller) GetAllApprovedParkings(c *gin.Context) {
 	}
 	var middle model.Middleware
 	middle = con.Middleware.AfterGetAllParkings(parkings)
+	fmt.Println("middle.Data",middle.Data)
+	var rs []model.Parking
+	raw, _ := json.Marshal(middle.Data)
+	err = json.Unmarshal(raw, &rs)
+	if len(rs) == 0 {
+		c.JSON(http.StatusOK, model.ErrorMessage{Message: "Không tồn tại bãi đỗ nào"})
+		return
+	}
+
 	c.JSON(http.StatusOK, middle.Data)
 	return
 
 }
 
-func (con *Controller) GetAllParkingsOfOwner(c *gin.Context) {
+func (con *ControllingService) GetAllParkingsOfOwner(c *gin.Context) {
 	// Before get all parkings
 	var middle model.Middleware
 	middle = con.Middleware.BeforeGetDetailUser(c)
@@ -137,10 +145,10 @@ func (con *Controller) GetAllParkingsOfOwner(c *gin.Context) {
 	return
 }
 
-func (con *Controller) RecommendParking(c *gin.Context) {
+func (con *ControllingService) RecommendParking(c *gin.Context) {
 
 }
-func (con *Controller) ModifyParkingByOwner(c *gin.Context) {
+func (con *ControllingService) ModifyParkingByOwner(c *gin.Context) {
 	var middle model.Middleware
 	middle = con.Middleware.BeforeModifyParkingByOwner(c)
 	if middle.StatusCode != 0 {
@@ -157,7 +165,7 @@ func (con *Controller) ModifyParkingByOwner(c *gin.Context) {
 	c.JSON(http.StatusOK, model.SuccessMessage{Message: "Cập nhật thông tin bãi đỗ thành công"})
 	return
 }
-func (con *Controller) RemoveParkingOfOwner(c *gin.Context) {
+func (con *ControllingService) RemoveParkingOfOwner(c *gin.Context) {
 	var middle model.Middleware
 	middle = con.Middleware.BeforeDeleteParkingByOwner(c)
 	if middle.StatusCode != 0 {
@@ -175,7 +183,7 @@ func (con *Controller) RemoveParkingOfOwner(c *gin.Context) {
 	return
 }
 
-func (con *Controller) GetAllOwners(c *gin.Context) {
+func (con *ControllingService) GetAllOwners(c *gin.Context) {
 	var middle model.Middleware
 	middle = con.Middleware.BeforeGetAllOwners(c)
 	if middle.StatusCode != 0 {
@@ -195,7 +203,7 @@ func (con *Controller) GetAllOwners(c *gin.Context) {
 	return
 }
 
-func (con *Controller) DisableOwner(c *gin.Context) {
+func (con *ControllingService) DisableOwner(c *gin.Context) {
 	var middle model.Middleware
 	middle = con.Middleware.BeforeDisableOwner(c)
 	c.Header("Access-Control-Allow-Origin", "*")
@@ -212,10 +220,10 @@ func (con *Controller) DisableOwner(c *gin.Context) {
 	c.JSON(http.StatusOK, model.SuccessMessage{Message:"Vô hiệu hóa thành công"})
 	return
 }
-func (con *Controller) CreateNewTransaction(c *gin.Context) {
+func (con *ControllingService) CreateNewTransaction(c *gin.Context) {
 
 }
-func (con *Controller) GetAllTransactionOfUser(c *gin.Context) {
+func (con *ControllingService) GetAllTransactionOfUser(c *gin.Context) {
 	var middle model.Middleware
 	middle = con.Middleware.BeforeGetAllTransactionOfUser(c)
 	if middle.StatusCode != 0 {
@@ -236,7 +244,7 @@ func (con *Controller) GetAllTransactionOfUser(c *gin.Context) {
 	c.JSON(http.StatusOK, transactions)
 	return
 }
-func (con *Controller) GetAllTransaction(c *gin.Context) {
+func (con *ControllingService) GetAllTransaction(c *gin.Context) {
 	var middle model.Middleware
 	middle = con.Middleware.BeforeGetAllTransaction(c)
 	if middle.StatusCode != 0 {
@@ -254,19 +262,30 @@ func (con *Controller) GetAllTransaction(c *gin.Context) {
 	c.JSON(http.StatusOK, transactions)
 	return
 }
-func (con *Controller) DeclineTransaction(c *gin.Context) {
+func (con *ControllingService) DeclineTransaction(c *gin.Context) {
 
 }
-func (con *Controller) AcceptTransaction(c *gin.Context) {
+func (con *ControllingService) AcceptTransaction(c *gin.Context) {
 
 }
-func (con *Controller) RatingParking(c *gin.Context) {
-
+func (con *ControllingService) RatingParking(c *gin.Context) {
+	var middle model.Middleware
+	middle = con.Middleware.BeforeRating(c)
+	if middle.StatusCode != 0 {
+		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
+		return
+	}
+	var ratingIface mysql.RatingDAO
+	ratingIface = con.DAO
+	err := ratingIface.CreateVoteOfUser(middle.Data)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
+		return
+	}
+	c.JSON(http.StatusOK, model.SuccessMessage{Message: "Tạo vote thành công"})
+	return
 }
-func (con *Controller) AnalysisAllParkings(c *gin.Context) {
-
-}
-func (con *Controller) UploadFiles(c *gin.Context) {
+func (con *ControllingService) UploadFiles(c *gin.Context) {
 	// Before Upload
 	var midErrorMessage model.Middleware
 	token, _ := utils.GetTokenFromHeader(c)
@@ -303,7 +322,7 @@ func (con *Controller) UploadFiles(c *gin.Context) {
 	return
 }
 
-func (con *Controller) FindParkingByID(c *gin.Context) {
+func (con *ControllingService) FindParkingByID(c *gin.Context) {
 	parkingId := c.Param("parkingId")
 	var parkingDAOIface mysql.ParkingDAO
 	parkingDAOIface = con.DAO
@@ -319,7 +338,7 @@ func (con *Controller) FindParkingByID(c *gin.Context) {
 	return
 }
 
-func (con *Controller) GetAllParkings(c *gin.Context) {
+func (con *ControllingService) GetAllParkings(c *gin.Context) {
 	//limit  := c.Param("limit")
 	//offset := c.Param("offset")
 	var parkingDAOIface mysql.ParkingDAO
@@ -337,7 +356,7 @@ func (con *Controller) GetAllParkings(c *gin.Context) {
 	return
 }
 
-func (con *Controller) Register(c *gin.Context) {
+func (con *ControllingService) Register(c *gin.Context) {
 	// Before register
 	var middle model.Middleware
 	middle = con.Middleware.BeforeRegister(c)
@@ -368,7 +387,7 @@ func (con *Controller) Register(c *gin.Context) {
 	return
 }
 
-func (con *Controller) Login(c *gin.Context) {
+func (con *ControllingService) Login(c *gin.Context) {
 	var credential model.Credential
 	var middle model.Middleware
 	//Before Login
@@ -390,7 +409,7 @@ func (con *Controller) Login(c *gin.Context) {
 	return
 }
 
-func (con *Controller) VerifyParking(c *gin.Context) {
+func (con *ControllingService) VerifyParking(c *gin.Context) {
 	////// Before Verify
 	// Check Expired token
 	var middle model.Middleware
@@ -423,7 +442,7 @@ func (con *Controller) VerifyParking(c *gin.Context) {
 	/////
 }
 
-func (con *Controller) GetOwnerById(c *gin.Context) {
+func (con *ControllingService) GetOwnerById(c *gin.Context) {
 	// before get owner
 	var middle model.Middleware
 	middle = con.Middleware.BeforeGetOwnerById(c)
@@ -447,7 +466,7 @@ func (con *Controller) GetOwnerById(c *gin.Context) {
 	return
 }
 
-func (con *Controller) GetAllUsers(c *gin.Context) {
+func (con *ControllingService) GetAllUsers(c *gin.Context) {
 	// Before GetAllUser
 	var middle model.Middleware
 	middle = con.Middleware.BeforeGetAllUsers(c)
@@ -478,7 +497,7 @@ func (con *Controller) GetAllUsers(c *gin.Context) {
 	return
 }
 
-func (con *Controller) GetDetailUser(c *gin.Context) {
+func (con *ControllingService) GetDetailUser(c *gin.Context) {
 	//Before get detail user
 	var middle model.Middleware
 	middle = con.Middleware.BeforeGetDetailUser(c)
@@ -503,7 +522,7 @@ func (con *Controller) GetDetailUser(c *gin.Context) {
 	return
 }
 
-func (con *Controller) CreateNewOwner(c *gin.Context) {
+func (con *ControllingService) CreateNewOwner(c *gin.Context) {
 	// before create new owner
 	var middle model.Middleware
 	middle = con.Middleware.BeforeCreateNewOwner(c)
@@ -526,7 +545,7 @@ func (con *Controller) CreateNewOwner(c *gin.Context) {
 	return
 }
 
-func (con *Controller) CalculateAmountParking(c *gin.Context) {
+func (con *ControllingService) CalculateAmountParking(c *gin.Context) {
 	var middle model.Middleware
 	middle = con.Middleware.BeforeCalculateAmountParking(c)
 	if middle.StatusCode != 0 {
@@ -548,3 +567,10 @@ func (con *Controller) CalculateAmountParking(c *gin.Context) {
 	return
 }
 
+func (con *ControllingService)SaveTokenFireBase(c *gin.Context) {
+
+}
+
+func (con *ControllingService)RemoveToken(c *gin.Context) {
+
+}
