@@ -66,9 +66,7 @@ func (db *DAO) FindAllCredential(limit, offset string) ([]model.Credential, erro
 }
 
 func (db *DAO) CreateCredential(newUser model.Credential) error {
-	var credential model.Credential
-	//fmt.Println("NEWWWWWWWWW", newUser)
-	err := db.connection.Create(&newUser).Scan(&credential).Error
+	err := db.connection.Create(&newUser).Error
 	//err  = connection.Raw("SELECT username, email, points, role, created_at FROM credentials WHERE username=?", newUser.Username).Scan(&credential).Error
 	if err != nil {
 		return fmt.Errorf("Loi truy van database: %s", err.Error())

@@ -1,3 +1,4 @@
 config sql.DB for better performance
 
 gocraft work
+export PATH=$PATH:/usr/local/go/bin

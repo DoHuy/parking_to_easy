@@ -7,3 +7,5 @@ vendors:
     rev: f81c604d8ac2e088ff70b9ce1809016e6b85e7c0
   - path: github.com/gomodule/redigo
     rev: 09d84710e01a746165eadd36e85d25e0e1923cff
+  - path: github.com/gocraft/work
+    rev: 61759fb51303000f627b8f5410847bd0996c8d74

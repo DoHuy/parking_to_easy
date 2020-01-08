@@ -379,7 +379,7 @@ func (con *ControllingService) Register(c *gin.Context) {
 	//fmt.Println("loi gi vay may: ", newCredential)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{
-			Message: "Server error",
+			Message: "Hệ thống có sự cố",
 		})
 		return
 	}
