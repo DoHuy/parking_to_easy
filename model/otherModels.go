@@ -76,7 +76,7 @@ type NewParkingByAdmin struct {
 	ParkingName			string		`json:"parkingName,omitempty"`
 	Properties			string		`json:"properties,omitempty"`
 	Address				string		`json:"address,omitempty"`
-	KindOf				bool		`json:"kindOf,omitempty"`
+	KindOf				string		`json:"kindOf,omitempty"`
 	ParkingImages 		string		`json:"parkingImages,omitempty"`
 	Payment				string		`json:"payment,omitempty"`
 	Longitude			string		`json:"longitude,omitempty"`
