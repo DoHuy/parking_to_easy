@@ -8,7 +8,7 @@
   "secret_key": "abcdef123456789",
   "max_uploaded_file_size":  100000,
   "environment": {
-    "hostname": "localhost",
+    "hostname": "192.168.137.221",
     "port": "8085"
   },
   "redis": {
@@ -16,5 +16,6 @@
     "topic": ["JWT", "DEVICES"],
     "networks": "tcp"
   },
-  "token_expired": 10000
+  "token_expired": 10000,
+  "api_key": "AIzaSyCQfS5X15m146NhXo6wFnWOxb8nGvSjFs8"
 }
