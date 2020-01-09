@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/DoHuy/parking_to_easy/business_logic"
 	"net/http"
 	"strconv"
 	"time"
@@ -684,4 +685,33 @@ func (mid *MiddleWareService)BeforeRecommendParking(c *gin.Context) model.Middle
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
 	return model.Middleware{}
+}
+
+func (mid *MiddleWareService)BeforeCreateNewTransaction(c *gin.Context) model.Middleware{
+	token, err := utils.GetTokenFromHeader(c)
+	if err != nil {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check format token
+	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	if checked != true {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check expired token
+	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	if checkedExpired == true {
+		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
+	}
+	// convert data
+	var transaction	model.Transaction
+	var payload model.Payload
+	secretKey  := string(config.GetSecretKey())
+	raw, _ := auth.Decode(token, secretKey)
+	err = json.Unmarshal(raw, &payload)
+	rawBody := utils.GetBodyRequest(c)
+	err = json.Unmarshal(rawBody, &transaction)
+	service := business_logic.NewService(mid.DAO)
+	converted, err := service.CustomTransaction(payload, transaction)
+	fmt.Println("transaction ::: in middleware", converted)
+	return model.Middleware{Data: converted}
 }

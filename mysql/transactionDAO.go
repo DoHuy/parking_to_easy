@@ -10,6 +10,7 @@ type TransactionDAO interface {
 	CalTotalAmountOfParking(id string) (int, error)
 	FindTransactionOfUser(id interface{}) ([]model.Transaction, error)
 	FindAllTransaction() ([]model.Transaction, error)
+	CreateTransaction(tran model.Transaction) error
 }
 
 func (db *DAO)CalTotalAmountOfParking(id string) (int, error) {
@@ -49,4 +50,12 @@ func (db *DAO)FindAllTransaction() ([]model.Transaction, error) {
 		return []model.Transaction{}, err
 	}
 	return transactions, nil
+}
+
+func (db *DAO)CreateTransaction(transaction model.Transaction) error{
+	err := db.connection.Create(&transaction).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }

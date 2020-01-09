@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/DoHuy/parking_to_easy/business_logic"
 	"github.com/DoHuy/parking_to_easy/business_logic/auth"
 	"github.com/DoHuy/parking_to_easy/config"
 	"github.com/DoHuy/parking_to_easy/model"
@@ -43,6 +44,7 @@ func (con *ControllingService)Options(c *gin.Context) {
 // Bai dau xe
 func (con *ControllingService) CreateNewParkingByAdmin(c *gin.Context) {
 	// Before create
+	c.Header("Access-Control-Allow-Origin", "*")
 	var middle model.Middleware
 	middle = con.Middleware.BeforeCreateNewParkingByAdmin(c)
 	if middle.StatusCode != 0 {
@@ -60,7 +62,6 @@ func (con *ControllingService) CreateNewParkingByAdmin(c *gin.Context) {
 		})
 		return
 	}
-	c.Header("Access-Control-Allow-Origin", "*")
 	c.JSON(http.StatusOK, model.SuccessMessage{Message: "Thêm mới thành công"})
 	return
 }
@@ -221,6 +222,21 @@ func (con *ControllingService) DisableOwner(c *gin.Context) {
 	return
 }
 func (con *ControllingService) CreateNewTransaction(c *gin.Context) {
+	var middle model.Middleware
+	middle = con.Middleware.BeforeCreateNewTransaction(c)
+	if middle.StatusCode != 0 {
+		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
+		return
+	}
+	// call Transaction service
+	service := business_logic.NewService(con.DAO)
+	err := service.AddNewTicket(middle.Data)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
+		return
+	}
+	c.JSON(http.StatusOK, model.SuccessMessage{Message: "Tạo thành công giao dịch"})
+	return
 
 }
 func (con *ControllingService) GetAllTransactionOfUser(c *gin.Context) {
@@ -341,6 +357,7 @@ func (con *ControllingService) FindParkingByID(c *gin.Context) {
 func (con *ControllingService) GetAllParkings(c *gin.Context) {
 	//limit  := c.Param("limit")
 	//offset := c.Param("offset")
+	c.Header("Access-Control-Allow-Origin", "*")
 	var parkingDAOIface mysql.ParkingDAO
 	parkingDAOIface = con.DAO
 	parkings, err := parkingDAOIface.GetAllParking()
@@ -350,7 +367,6 @@ func (con *ControllingService) GetAllParkings(c *gin.Context) {
 		})
 		return
 	}
-	c.Header("Access-Control-Allow-Origin", "*")
 	c.JSON(http.StatusOK, parkings)
 
 	return
@@ -388,6 +404,7 @@ func (con *ControllingService) Register(c *gin.Context) {
 }
 
 func (con *ControllingService) Login(c *gin.Context) {
+	c.Header("Access-Control-Allow-Origin", "*")
 	var credential model.Credential
 	var middle model.Middleware
 	//Before Login
@@ -412,6 +429,7 @@ func (con *ControllingService) Login(c *gin.Context) {
 func (con *ControllingService) VerifyParking(c *gin.Context) {
 	////// Before Verify
 	// Check Expired token
+	c.Header("Access-Control-Allow-Origin", "*")
 	var middle model.Middleware
 	middle = con.Middleware.BeforeVerifyParking(c)
 	if middle.StatusCode != 0 {
@@ -444,6 +462,7 @@ func (con *ControllingService) VerifyParking(c *gin.Context) {
 
 func (con *ControllingService) GetOwnerById(c *gin.Context) {
 	// before get owner
+	c.Header("Access-Control-Allow-Origin", "*")
 	var middle model.Middleware
 	middle = con.Middleware.BeforeGetOwnerById(c)
 	if middle.StatusCode != 0 {
@@ -468,6 +487,7 @@ func (con *ControllingService) GetOwnerById(c *gin.Context) {
 
 func (con *ControllingService) GetAllUsers(c *gin.Context) {
 	// Before GetAllUser
+	c.Header("Access-Control-Allow-Origin", "*")
 	var middle model.Middleware
 	middle = con.Middleware.BeforeGetAllUsers(c)
 	if middle.StatusCode != 0 {
@@ -499,6 +519,7 @@ func (con *ControllingService) GetAllUsers(c *gin.Context) {
 
 func (con *ControllingService) GetDetailUser(c *gin.Context) {
 	//Before get detail user
+	c.Header("Access-Control-Allow-Origin", "*")
 	var middle model.Middleware
 	middle = con.Middleware.BeforeGetDetailUser(c)
 	if middle.StatusCode != 0 {
@@ -524,6 +545,7 @@ func (con *ControllingService) GetDetailUser(c *gin.Context) {
 
 func (con *ControllingService) CreateNewOwner(c *gin.Context) {
 	// before create new owner
+	c.Header("Access-Control-Allow-Origin", "*")
 	var middle model.Middleware
 	middle = con.Middleware.BeforeCreateNewOwner(c)
 	if middle.StatusCode != 0 {
@@ -546,6 +568,7 @@ func (con *ControllingService) CreateNewOwner(c *gin.Context) {
 }
 
 func (con *ControllingService) CalculateAmountParking(c *gin.Context) {
+	c.Header("Access-Control-Allow-Origin", "*")
 	var middle model.Middleware
 	middle = con.Middleware.BeforeCalculateAmountParking(c)
 	if middle.StatusCode != 0 {
