@@ -82,7 +82,7 @@ type NewParkingByAdmin struct {
 	Longitude			string		`json:"longitude,omitempty"`
 	Latitude			string		`json:"latitude,omitempty"`
 	Capacity			string		`json:"capacity,omitempty"`
-	BlockAmount			int			`json:"blockAmount,omitempty"`
+	BlockAmount			interface{}	`json:"blockAmount,omitempty"`
 	CertificateOfLand	string		`json:"certificateOfland,omitempty"`
 	Describe			string		`json:"describe,omitempty"`
 	Status				string		`json:"status,omitempty"`

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	//"fmt"
@@ -205,6 +206,7 @@ func (mid *MiddleWareService)BeforeCreateNewParkingByAdmin(c *gin.Context) model
 	newParking.Status = "APPROVED"
 	newParking.CreatedAt = time.Now().Format(time.RFC3339)
 	newParking.OwnerId = payload.UserId
+	newParking.BlockAmount,_ = strconv.Atoi(newParking.BlockAmount.(string))
 	return model.Middleware{Data: newParking}
 
 }
