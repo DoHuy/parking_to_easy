@@ -157,8 +157,10 @@ DROP TABLE IF EXISTS `transactions`;
 CREATE TABLE `transactions` (
   `credentialId` int(11) NOT NULL,
   `parkingId` int(11) NOT NULL,
-  `liencePlate` text,
+  `licence` text,
   `session` text,
+  `phoneNumber` text,
+  `requestedPayment` text,
   `startTime` text,
   `endTime` text,
   `amount` int(11) DEFAULT NULL,
