@@ -66,7 +66,7 @@ type Transaction struct {
 	ParkingId			int				`gorm:"column:parkingId" json:"parkingId,omitempty"`
 	Credential			Credential		`json:"credential,omitempty,omitempty"`
 	Parking				Parking			`json:"parking,omitempty,omitempty"`
-	LicencePlate		string			`gorm:"column:licencePlate" json:"liencePlate,omitempty"`
+	Licence				string			`gorm:"column:licence" json:"liencePlate,omitempty"`
 	PhoneNumber			string			`gorm:"column:phoneNumber" json:"phoneNumber,omitempty"`
 	RequestedPayment	string			`gorm:"column:requestedPayment" json:"requestedPayment,omitempty"`
 	Session				int				`gorm:"column:session" json:"session,omitempty"`
