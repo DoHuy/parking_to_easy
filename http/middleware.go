@@ -714,7 +714,7 @@ func (mid *MiddleWareService)BeforeCreateNewTransaction(c *gin.Context) model.Mi
 	err = json.Unmarshal(rawBody, &transaction)
 	service := business_logic.NewService(mid.DAO)
 	converted, err := service.CustomTransaction(payload, transaction)
-	fmt.Println("transaction ::: in middleware", converted)
+	//fmt.Println("transaction ::: in middleware", converted)
 	return model.Middleware{Data: converted}
 }
 

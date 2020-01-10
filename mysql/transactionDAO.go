@@ -56,15 +56,15 @@ func (db *DAO)CreateTransaction(transaction model.Transaction) error{
 
 func (db *DAO)FindAllTransactionOfUser(userId, status int) ([]model.GettingTransactionDetailResp, error){
 	var output []model.GettingTransactionDetailResp
-	sql := `SELECT transactions.id as transactionId, transactions.startTime, transactions.endTime, transactions.licence,
-			parkings.address as address, transactions.amount, transactions.status, transactions.created_at,
-			transactions.phoneNumber as userPhoneNumber, owners.phoneNumber as hostPhoneNumber, transactions.parkingId
-			FROM transactions as tran
-			INNER JOIN parkings as p
-			ON tran.parkingId = p.id
-			INNER JOIN owners as o
-			ON p.ownerId = o.credentialId
-			WHERE transactions.credentialId=? AND transactions.status=?`
+	sql := `SELECT tran.startTime, tran.endTime, tran.licence, p.address as address, tran.amount, tran.status,
+			tran.created_at, tran.phoneNumber as userPhoneNumber, o.phoneNumber as hostPhoneNumber, tran.parkingId 
+			FROM transactions as tran 
+			INNER JOIN parkings as p 
+			ON tran.parkingId = p.id 
+			INNER JOIN owners as o 
+			ON p.ownerId = o.credentialId 
+			WHERE tran.credentialId=? AND tran.status=?;
+`
 	err := db.connection.Raw(sql, userId, status).Scan(&output).Error
 	if err != nil {
 		return []model.GettingTransactionDetailResp{}, err
@@ -74,15 +74,14 @@ func (db *DAO)FindAllTransactionOfUser(userId, status int) ([]model.GettingTrans
 
 func (db *DAO)FindAllTransactionOfOwner(ownerId, status int)([]model.GettingTransactionDetailResp, error){
 	var output []model.GettingTransactionDetailResp
-	sql := `SELECT transactions.id as transactionId, transactions.startTime, transactions.endTime, transactions.licence,
-			parkings.address as address, transactions.amount, transactions.status, transactions.created_at,
-			transactions.phoneNumber as userPhoneNumber, owners.phoneNumber as hostPhoneNumber, transactions.parkingId
-			FROM transactions as tran
-			INNER JOIN parkings as p
-			ON tran.parkingId = p.id
-			INNER JOIN owners as o
-			ON p.ownerId = o.credentialId
-			WHERE o.credentialId=? AND transactions.status=?`
+	sql := `SELECT tran.startTime, tran.endTime, tran.licence, p.address as address, tran.amount, tran.status,
+			tran.created_at, tran.phoneNumber as userPhoneNumber, o.phoneNumber as hostPhoneNumber, tran.parkingId 
+			FROM transactions as tran 
+			INNER JOIN parkings as p 
+			ON tran.parkingId = p.id 
+			INNER JOIN owners as o 
+			ON p.ownerId = o.credentialId 
+			WHERE tran.credentialId=? AND tran.status=?`
 	err := db.connection.Raw(sql, ownerId, status).Scan(&output).Error
 	if err != nil {
 		return []model.GettingTransactionDetailResp{}, err

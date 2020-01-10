@@ -219,6 +219,7 @@ func (con *ControllingService) DisableOwner(c *gin.Context) {
 	var ownerIface = con.DAO
 	err := ownerIface.ChangeStatusOwner(middle.Data)
 	if err != nil {
+		fmt.Println("ERRORR::::::::::", err)
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message:"Vô hiệu hóa thất bại, hệ thống có sự cố"})
 		return
 	}

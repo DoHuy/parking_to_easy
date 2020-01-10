@@ -155,6 +155,7 @@ DROP TABLE IF EXISTS `transactions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `transactions` (
+  `id`  int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY
   `credentialId` int(11) NOT NULL,
   `parkingId` int(11) NOT NULL,
   `licence` text,
@@ -168,8 +169,6 @@ CREATE TABLE `transactions` (
   `reasonMsg` text,
   `created_at` text,
   `modified_at` text,
-  PRIMARY KEY (`credentialId`,`parkingId`),
-  KEY `fk_parking` (`parkingId`),
   CONSTRAINT `fk_credential3` FOREIGN KEY (`credentialId`) REFERENCES `credentials` (`id`),
   CONSTRAINT `fk_parking` FOREIGN KEY (`parkingId`) REFERENCES `parkings` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -110,13 +110,13 @@ type GettingTransactionDetailResp struct {
 	EndTime			string		`json:"endTime,omitempty"`
 	Licence			string		`json:"licence,omitempty"`
 	Address			string		`json:"address,omitempty"`
-	Amount			int			`json:"amount,omitempty"`
-	Status			int			`json:"status,omitempty"`
+	Amount			int		`json:"amount,omitempty"`
+	Status			int		`json:"status,omitempty"`
 	CreatedAt		string		`json:"created_at,omitempty"`
-	HostPhoneNumber	string		`json:"hostPhoneNumber,omitempty"`
-	UserPhoneNumber	string		`json:"userPhoneNumber,omitempty"`
-	ParkingId		int			`json:"parkingId,omitempty"`
-	TransactionId	int			`json:"transactionId,omitempty"`
+	HostPhoneNumber		string		`json:"hostPhoneNumber,omitempty"`
+	UserPhoneNumber		string		`json:"userPhoneNumber,omitempty"`
+	ParkingId		int		`json:"parkingId,omitempty"`
+	TransactionId		int		`json:"transactionId,omitempty"`
 
 }
 

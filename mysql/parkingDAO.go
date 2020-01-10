@@ -58,11 +58,13 @@ func (db *DAO)ChangStatusParking(updatedParking model.Parking)  error {
 
 func (db *DAO)FindParkingByID(id string) (model.Parking, error) {
 	var parking model.Parking
-	err := db.connection.Table("parkings").Raw("SELECT * FROM parkings WHERE parkings.id=? AND deleted_at=\"\"", id).Scan(&parking).Error
+	err := db.connection.Raw("SELECT * FROM parkings WHERE parkings.id=? AND deleted_at=\"\"", id).Scan(&parking).Error
 
 	if err != nil {
+		fmt.Println("eRRERE", err)
 		return model.Parking{}, err
 	}
+	fmt.Println("parking::: ::: :::", parking)
 	return parking, nil
 }
 
