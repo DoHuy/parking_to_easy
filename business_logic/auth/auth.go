@@ -63,8 +63,11 @@ func (this *Auth) Authenticate(credential model.Credential, credIFace mysql.Cred
 		// hard code
 		//fmt.Println("expiredDuration:   ", expiredDuration.Milliseconds())
 		jwt, err := Encode(model.Payload{UserId: credential.ID, Role: credential.Role, Expired: time.Now().Add(expiredDuration).Format(time.RFC3339),}, secretKey)
+
+		fmt.Println("sadasdasdaaS1111", jwt)
 		err = this.Redis.SetJWTTokenToRedis(credential.Username, jwt)
 		if err != nil {
+			fmt.Println("error set token ::", err)
 			return "", nil, fmt.Errorf("Error with Redis %s", err.Error())
 		}
 		return jwt, nil, nil
