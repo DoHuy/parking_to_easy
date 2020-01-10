@@ -106,17 +106,16 @@ type CreatingTransactionInput struct {
 }
 
 type GettingTransactionDetailResp struct {
-	StartTime		string		`json:"startTime,omitempty"`
-	EndTime			string		`json:"endTime,omitempty"`
-	Licence			string		`json:"licence,omitempty"`
-	Address			string		`json:"address,omitempty"`
-	Amount			int		`json:"amount,omitempty"`
-	Status			int		`json:"status,omitempty"`
-	CreatedAt		string		`json:"created_at,omitempty"`
-	HostPhoneNumber		string		`json:"hostPhoneNumber,omitempty"`
-	UserPhoneNumber		string		`json:"userPhoneNumber,omitempty"`
-	ParkingId		int		`json:"parkingId,omitempty"`
-	TransactionId		int		`json:"transactionId,omitempty"`
+	ID				int			`json:"transactionId"`
+	StartTime		string		`json:"startTime"`
+	EndTime			string		`json:"endTime"`
+	Licence			string		`json:"licence"`
+	Address			string		`json:"address"`
+	Amount			int			`json:"amount"`
+	Status			int			`json:"status"`
+	CreatedAt		string		`json:"created_at"`
+	UserPhoneNumber	string		`json:"userPhoneNumber"`
+	HostPhoneNumber	string		`json:"hostPhoneNumber"`
 
 }
 
@@ -126,8 +125,7 @@ type GetTransactionOfUserWithStatusInput struct {
 }
 
 type GetTransactionOfOwnerWithStatusInput struct {
-	Status	int	`json:"status"`
-	OwnerId	int	`json:"ownerId"`
+	ParkingId	int `json:"parkingId"`
 }
 
 

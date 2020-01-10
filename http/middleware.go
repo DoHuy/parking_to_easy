@@ -745,8 +745,8 @@ func (mid *MiddleWareService)BeforeGetAllTransactionOfOwner(c *gin.Context) mode
 		return model.Middleware{StatusCode: 503, Message: "Dịch vụ không sẵn có"}
 	}
 	// convert data
-	status,_ := strconv.Atoi(c.Param("status"))
-	return model.Middleware{Data: model.GetTransactionOfOwnerWithStatusInput{Status: status, OwnerId: payload.UserId}}
+	parkingId,_ := strconv.Atoi(c.Param("parkingId"))
+	return model.Middleware{Data: model.GetTransactionOfOwnerWithStatusInput{ParkingId: parkingId}}
 }
 
 func (mid *MiddleWareService)BeforeDeclineTransaction(c *gin.Context) model.Middleware{

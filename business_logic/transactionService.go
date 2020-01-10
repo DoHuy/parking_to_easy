@@ -80,7 +80,7 @@ func (self *TransactionService)GetTransactionOfOwnerWithStatus(data interface{})
 	err := utils.BindRawStructToRespStruct(data, &input)
 	var transactionIface mysql.TransactionDAO
 	transactionIface = self.Dao
-	transactions, err := transactionIface.FindAllTransactionOfOwner(input.OwnerId, input.Status)
+	transactions, err := transactionIface.FindAllTransactionOfOwner(input.ParkingId)
 	if err != nil {
 		return []model.GettingTransactionDetailResp{}, err
 	}

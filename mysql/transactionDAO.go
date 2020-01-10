@@ -11,7 +11,7 @@ type TransactionDAO interface {
 	FindAllTransaction() ([]model.Transaction, error)
 	CreateTransaction(tran model.Transaction) error
 	FindAllTransactionOfUser(userId, status int) ([]model.GettingTransactionDetailResp, error)
-	FindAllTransactionOfOwner(ownerId, status int)([]model.GettingTransactionDetailResp, error)
+	FindAllTransactionOfOwner(parkingId int)([]model.GettingTransactionDetailResp, error)
 }
 
 func (db *DAO)CalTotalAmountOfParking(id string) (int, error) {
@@ -56,7 +56,7 @@ func (db *DAO)CreateTransaction(transaction model.Transaction) error{
 
 func (db *DAO)FindAllTransactionOfUser(userId, status int) ([]model.GettingTransactionDetailResp, error){
 	var output []model.GettingTransactionDetailResp
-	sql := `SELECT tran.startTime, tran.endTime, tran.licence, p.address as address, tran.amount, tran.status,
+	sql := `SELECT tran.id, tran.startTime, tran.endTime, tran.licence, p.address as address, tran.amount, tran.status,
 			tran.created_at, tran.phoneNumber as userPhoneNumber, o.phoneNumber as hostPhoneNumber, tran.parkingId 
 			FROM transactions as tran 
 			INNER JOIN parkings as p 
@@ -72,7 +72,7 @@ func (db *DAO)FindAllTransactionOfUser(userId, status int) ([]model.GettingTrans
 	return output, nil
 }
 
-func (db *DAO)FindAllTransactionOfOwner(ownerId, status int)([]model.GettingTransactionDetailResp, error){
+func (db *DAO)FindAllTransactionOfOwner(parkingId int)([]model.GettingTransactionDetailResp, error){
 	var output []model.GettingTransactionDetailResp
 	sql := `SELECT tran.startTime, tran.endTime, tran.licence, p.address as address, tran.amount, tran.status,
 			tran.created_at, tran.phoneNumber as userPhoneNumber, o.phoneNumber as hostPhoneNumber, tran.parkingId 
@@ -81,8 +81,8 @@ func (db *DAO)FindAllTransactionOfOwner(ownerId, status int)([]model.GettingTran
 			ON tran.parkingId = p.id 
 			INNER JOIN owners as o 
 			ON p.ownerId = o.credentialId 
-			WHERE tran.credentialId=? AND tran.status=?`
-	err := db.connection.Raw(sql, ownerId, status).Scan(&output).Error
+			WHERE tran.parkingId=?`
+	err := db.connection.Raw(sql,parkingId).Scan(&output).Error
 	if err != nil {
 		return []model.GettingTransactionDetailResp{}, err
 	}
