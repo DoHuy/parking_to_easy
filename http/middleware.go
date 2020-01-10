@@ -587,7 +587,7 @@ func (mid *MiddleWareService)BeforeCalculateAmountAndVote(c *gin.Context) model.
 	return model.Middleware{Data: c.Param("id")}
 }
 
-func (mid *MiddleWareService)BeforeGetAllTransactionOfUser(c *gin.Context) model.Middleware{
+func (mid *MiddleWareService)BeforeGetTransactionOfUser(c *gin.Context) model.Middleware{
 	token, err := utils.GetTokenFromHeader(c)
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
@@ -609,8 +609,10 @@ func (mid *MiddleWareService)BeforeGetAllTransactionOfUser(c *gin.Context) model
 	if err != nil {
 		return model.Middleware{StatusCode: 500, Message: "Hệ thống có sự cố"}
 	}
+	// convert data
+	status,_ := strconv.Atoi(c.Param("status"))
 
-	return model.Middleware{Data: payload.UserId}
+	return model.Middleware{Data: model.GetTransactionOfUserWithStatusInput{Status: status, UserId: payload.UserId}}
 }
 
 func (mid *MiddleWareService)BeforeGetAllTransaction(c *gin.Context)model.Middleware{
@@ -714,4 +716,60 @@ func (mid *MiddleWareService)BeforeCreateNewTransaction(c *gin.Context) model.Mi
 	converted, err := service.CustomTransaction(payload, transaction)
 	fmt.Println("transaction ::: in middleware", converted)
 	return model.Middleware{Data: converted}
+}
+
+func (mid *MiddleWareService)BeforeGetAllTransactionOfOwner(c *gin.Context) model.Middleware{
+	token, err := utils.GetTokenFromHeader(c)
+	if err != nil {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check format token
+	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	if checked != true {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check expired token
+	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	if checkedExpired == true {
+		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
+	}
+
+	var payload model.Payload
+	secretKey  := string(config.GetSecretKey())
+	raw, _ := auth.Decode(token, secretKey)
+	err = json.Unmarshal(raw, &payload)
+	if err != nil {
+		return model.Middleware{StatusCode: 500, Message: "Hệ thống có sự cố"}
+	}
+	if payload.Role == "admin" {
+		return model.Middleware{StatusCode: 503, Message: "Dịch vụ không sẵn có"}
+	}
+	// convert data
+	status,_ := strconv.Atoi(c.Param("status"))
+	return model.Middleware{Data: model.GetTransactionOfOwnerWithStatusInput{Status: status, OwnerId: payload.UserId}}
+}
+
+func (mid *MiddleWareService)BeforeDeclineTransaction(c *gin.Context) model.Middleware{
+	token, err := utils.GetTokenFromHeader(c)
+	if err != nil {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check format token
+	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	if checked != true {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check expired token
+	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	if checkedExpired == true {
+		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
+	}
+	var payload model.Payload
+	secretKey  := string(config.GetSecretKey())
+	raw, _ := auth.Decode(token, secretKey)
+	err = json.Unmarshal(raw, &payload)
+	if err != nil {
+		return model.Middleware{StatusCode: 500, Message: "Hệ thống có sự cố"}
+	}
+	return model.Middleware{Data: payload.UserId}
 }

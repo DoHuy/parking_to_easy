@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/DoHuy/parking_to_easy/model"
 	"github.com/DoHuy/parking_to_easy/mysql"
+	"github.com/DoHuy/parking_to_easy/utils"
 	"time"
 )
 
@@ -14,6 +15,15 @@ import (
 4 xe dang duoc gui
 5 xe ket thuc gui
 */
+// những trạng thái khi book bãi đậu
+var STAGE = map[string]int{
+	"chưa được duyệt gửi":1,
+	"được duyệt gửi":2,
+	"đang gửi":3,
+	"hủy bỏ gửi":4,
+	"kết thúc gửi":5,
+}
+
 const BLOCK_TIME = '5' // block time fix cung
 type TransactionService struct {
 	Dao		*mysql.DAO
@@ -57,5 +67,38 @@ func (self *TransactionService)AddNewTicket(data interface{}) error{
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (self *TransactionService)GetTransactionOfOwnerWithStatus(data interface{}) ([]model.GettingTransactionDetailResp, error){
+	var input model.GetTransactionOfOwnerWithStatusInput
+	err := utils.BindRawStructToRespStruct(data, &input)
+	var transactionIface mysql.TransactionDAO
+	transactionIface = self.Dao
+	transactions, err := transactionIface.FindAllTransactionOfOwner(input.OwnerId, input.Status)
+	if err != nil {
+		return []model.GettingTransactionDetailResp{}, err
+	}
+	return transactions, nil
+	// get parking table, get
+}
+func (self *TransactionService)GetTransactionOfUserWithStatus(data interface{}) ([]model.GettingTransactionDetailResp, error){
+	var input model.GetTransactionOfUserWithStatusInput
+	err := utils.BindRawStructToRespStruct(data, &input)
+	var transactionIface mysql.TransactionDAO
+	transactionIface = self.Dao
+	transactions, err := transactionIface.FindAllTransactionOfUser(input.UserId, input.Status)
+	if err != nil {
+		return []model.GettingTransactionDetailResp{}, err
+	}
+	return transactions, nil
+	// get parking table, get
+
+
+}
+
+func (self *TransactionService)BreakATransaction() error{
+
+
 	return nil
 }

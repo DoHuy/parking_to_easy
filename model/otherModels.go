@@ -120,3 +120,15 @@ type GettingTransactionDetailResp struct {
 
 }
 
+type GetTransactionOfUserWithStatusInput struct {
+	Status	int	`json:"status"`
+	UserId	int	`json:"userId"`
+}
+
+type GetTransactionOfOwnerWithStatusInput struct {
+	Status	int	`json:"status"`
+	OwnerId	int	`json:"ownerId"`
+}
+
+
+

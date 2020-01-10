@@ -43,10 +43,11 @@ func (service *RouteService)Init() {
 	service.Router.POST("/api/create/owner", service.Controller.CreateNewOwner)//done
 	service.Router.PUT("/api/admin/disable/owner/:id", service.Controller.DisableOwner) // chua test
 	// transaction
-	service.Router.POST("/api/user/create/transaction", service.Controller.CreateNewTransaction)
-	service.Router.GET("/api/user/get/all/transaction", service.Controller.GetAllTransactionOfUser) // chua test
+	service.Router.POST("/api/user/create/transaction", service.Controller.CreateNewTransaction) // chua test
+	service.Router.GET("/api/owner/get/all/transaction/:status", service.Controller.GetAllTransactionOfOwner) // chua test
+	service.Router.GET("/api/user/get/transaction/:status", service.Controller.GetTransactionOfUser) // chua test
 	service.Router.GET("/api/admin/get/all/transaction", service.Controller.GetAllTransaction) // chua test
-	service.Router.PATCH("/api/decline/transaction/:id", service.Controller.DeclineTransaction)
+	service.Router.PATCH("/api/decline/transaction/:id", service.Controller.DeclineTransaction)//
 	service.Router.PATCH("/api/accept/transaction/:id", service.Controller.AcceptTransaction)
 	////////////////////////
 	// Upload nhieu file

@@ -48,6 +48,7 @@ func (con *ControllingService) CreateNewParkingByAdmin(c *gin.Context) {
 	var middle model.Middleware
 	middle = con.Middleware.BeforeCreateNewParkingByAdmin(c)
 	if middle.StatusCode != 0 {
+		fmt.Println("trong midd:::", middle.Message)
 		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
 		return
 	}
@@ -57,6 +58,7 @@ func (con *ControllingService) CreateNewParkingByAdmin(c *gin.Context) {
 	//fmt.Println("middle.Datamiddle.Data", middle.Data)
 	err := parkingDAOIface.CreateNewParkingByAdmin(middle.Data)
 	if err != nil {
+		fmt.Println("ERRR::::::::", err)
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{
 			Message:    "Hệ thống có sự cố",
 		})
@@ -185,9 +187,11 @@ func (con *ControllingService) RemoveParkingOfOwner(c *gin.Context) {
 }
 
 func (con *ControllingService) GetAllOwners(c *gin.Context) {
+	c.Header("Access-Control-Allow-Origin", "*")
 	var middle model.Middleware
 	middle = con.Middleware.BeforeGetAllOwners(c)
 	if middle.StatusCode != 0 {
+		fmt.Println("ERRR:::::", middle.Message)
 		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
 		return
 	}
@@ -196,10 +200,10 @@ func (con *ControllingService) GetAllOwners(c *gin.Context) {
 	ownerDAOIface = con.DAO
 	owners, totalPage, err := ownerDAOIface.GetAllOwners(c.Param("limit"), c.Param("offset"))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: middle.Message})
+		fmt.Println("sádasdsadasda", err)
+		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
 		return
 	}
-	c.Header("Access-Control-Allow-Origin", "*")
 	c.JSON(http.StatusOK, map[string]interface{}{"owners": owners, "totalPage": totalPage})
 	return
 }
@@ -239,22 +243,43 @@ func (con *ControllingService) CreateNewTransaction(c *gin.Context) {
 	return
 
 }
-func (con *ControllingService) GetAllTransactionOfUser(c *gin.Context) {
+
+// param status
+func (con *ControllingService) GetTransactionOfUser(c *gin.Context) {
 	var middle model.Middleware
-	middle = con.Middleware.BeforeGetAllTransactionOfUser(c)
+	middle = con.Middleware.BeforeGetTransactionOfUser(c)
 	if middle.StatusCode != 0 {
 		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
 		return
 	}
-	var transactionIface mysql.TransactionDAO
-	transactionIface = con.DAO
-	transactions, err := transactionIface.FindTransactionOfUser(middle.Data)
+	// init service transaction
+	service := business_logic.NewService(con.DAO)
+	transactions, err := service.GetTransactionOfUserWithStatus(middle.Data)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
 		return
 	}
+	// after getAllTransaction
 	if len(transactions) == 0 {
 		c.JSON(http.StatusNotFound, model.ErrorMessage{Message: "Bạn chưa thực hiện một giao dịch nào"})
+		return
+	}
+	c.JSON(http.StatusOK, transactions)
+	return
+}
+
+func (con *ControllingService) GetAllTransactionOfOwner(c *gin.Context){
+	var middle model.Middleware
+	middle = con.Middleware.BeforeGetAllTransactionOfOwner(c)
+	if middle.StatusCode != 0 {
+		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
+		return
+	}
+
+	service := business_logic.NewService(con.DAO)
+	transactions, err := service.GetTransactionOfOwnerWithStatus(middle.Data)
+	if err != nil {
+		c.JSON(middle.StatusCode, model.ErrorMessage{Message: "Hệ thống có sự cố"})
 		return
 	}
 	c.JSON(http.StatusOK, transactions)
@@ -279,7 +304,7 @@ func (con *ControllingService) GetAllTransaction(c *gin.Context) {
 	return
 }
 func (con *ControllingService) DeclineTransaction(c *gin.Context) {
-
+	
 }
 func (con *ControllingService) AcceptTransaction(c *gin.Context) {
 
