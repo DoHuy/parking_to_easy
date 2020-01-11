@@ -4,14 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/DoHuy/parking_to_easy/model"
-	"strconv"
 )
 
 type OwnerDAO interface {
 	CreateNewOwner(newOwner interface{}) error
 	FindOwnerById(id interface{}) (model.Owner, error)
-	GetAllOwners(limit, offset string) ([]model.Owner, int, error)
-	ChangeStatusOwner(data interface{}) error
+	FindAllOwners() ([]model.Owner, error)
+	ModifyOwner(data model.DataStruct) error
 }
 
 func (db *DAO) CreateNewOwner(newOwner interface{}) error{
@@ -47,39 +46,18 @@ func (db *DAO) FindOwnerById(id interface{}) (model.Owner, error) {
 	return owner, nil
 }
 
-func (db *DAO)GetAllOwners(limit, offset string) ([]model.Owner, int, error) {
+func (db *DAO)FindAllOwners() ([]model.Owner, error) {
 	var owners []model.Owner
-	// get total
-	type Total struct {
-		Total string	`json:"total" `
-	}
-	var total Total
-	err := db.connection.Table("owners").Raw("SELECT count(*) AS total FROM owners").Scan(&total).Error
-	totalRecord, _ := strconv.Atoi(total.Total)
-	limitNum, _ := strconv.Atoi(limit)
-	fmt.Println("total:::", totalRecord)
 	//owners
-	err = db.connection.Table("owners").Raw("SELECT credentialId, fullName, phoneNumber, address, cmndImage, status, created_at FROM owners LIMIT ? OFFSET ?", limit, offset).Scan(&owners).Error
+	err := db.connection.Table("owners").Raw("SELECT credentialId, fullName, phoneNumber, address, cmndImage, status, created_at FROM owners").Scan(&owners).Error
 	if err != nil {
-		return owners, 0, err
+		return owners, err
 	}
-	return owners, totalRecord/limitNum, nil
+	return owners, nil
 }
 
-func (db *DAO)ChangeStatusOwner(data interface{}) error{
-	raw, _ := json.Marshal(data)
-	type DataStruct struct {
-		ID			string		`json:"id"`
-		Status		string		`json:"status"`
-		ModifiedAt	string		`json:"modified_at"`
-
-	}
-	var updateData DataStruct
-	err := json.Unmarshal(raw, &updateData)
-	if err != nil {
-		return err
-	}
-	err = db.connection.Exec("UPDATE owners SET `status`=?, modified_at=? WHERE id=?", updateData.Status, updateData.ModifiedAt,updateData.ID).Error
+func (db *DAO)ModifyOwner(updateData model.DataStruct) error{
+	err := db.connection.Exec("UPDATE owners SET `status`=?, modified_at=? WHERE credentialId=?", updateData.Status, updateData.ModifiedAt,updateData.CredentialId).Error
 	if err != nil {
 		return err
 	}

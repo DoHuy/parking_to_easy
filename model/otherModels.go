@@ -96,8 +96,8 @@ type SuccessMessage struct {
 }
 
 type CalculateAmountParkingResp struct {
-	Points	string	`json:"points"`
-	Stars	string	`json:"stars"`
+	Points	int		`json:"points"`
+	Stars	float64	`json:"stars"`
 }
 
 type CreatingTransactionInput struct {
@@ -107,15 +107,15 @@ type CreatingTransactionInput struct {
 
 type GettingTransactionDetailResp struct {
 	ID				int			`json:"transactionId"`
-	StartTime		string		`json:"startTime"`
-	EndTime			string		`json:"endTime"`
+	StartTime		string		`gorm:"column:startTime" json:"startTime,omitempty"`
+	EndTime			string		`gorm:"column:endTime" json:"endTime,omitempty"`
 	Licence			string		`json:"licence"`
 	Address			string		`json:"address"`
 	Amount			int			`json:"amount"`
 	Status			int			`json:"status"`
 	CreatedAt		string		`json:"created_at"`
-	UserPhoneNumber	string		`json:"userPhoneNumber"`
-	HostPhoneNumber	string		`json:"hostPhoneNumber"`
+	UserPhoneNumber	string		`gorm:"column:userPhoneNumber" json:"userPhoneNumber,omitempty"`
+	HostPhoneNumber	string		`gorm:"column:hostPhoneNumber" json:"hostPhoneNumber,omitempty"`
 
 }
 
@@ -126,7 +126,25 @@ type GetTransactionOfUserWithStatusInput struct {
 
 type GetTransactionOfOwnerWithStatusInput struct {
 	ParkingId	int `json:"parkingId"`
+	Status		int	`json:"status"`
+}
+
+type ChangingStateTransactionInput struct {
+	Status			int		`json:"status"`
+	TransactionId	int		`json:"transactionId"`
+	CredentialId	int		`json:"credentialId"`
 }
 
 
+type DataStruct struct {
+	CredentialId string		`json:"credentialId"`
+	Status		 string		`json:"status"`
+	ModifiedAt	 string		`json:"modified_at"`
 
+}
+
+type VerifyingParkingInput struct {
+	Status		string		`json:"status"`
+	ID			string		`json:"id"`
+	ModifiedAt	string		`json:"modified_at"`
+}

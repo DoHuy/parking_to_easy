@@ -8,9 +8,7 @@ import (
 
 
 type UserDevice struct {
-	ID				int 		`gorm:"column:id" json:"id,omitempty"`
-	DeviceToken		string		`gorm:"type:text" json:"deviceToken,omitempty"`
-	Credential		Credential  `json:"credential,omitempty"`
+	DeviceToken		string		`gorm:"column:deviceToken" json:"deviceToken,omitempty"`
 	CredentialId	int			`gorm:"column:credentialId" json:"credentialId,omitempty"`
 }
 
@@ -53,7 +51,7 @@ type Parking struct {
 	Capacity			string		`gorm:"column:capacity" json:"capacity,omitempty"`
 	BlockAmount			int			`gorm:"column:blockAmount" json:"blockAmount,omitempty"`
 	OwnerId				int			`gorm:"column:ownerId" json:"ownerId,omitempty"`
-	CertificateOfLand	string		`gorm:"column:certificateOfland" json:"certificateOfland,omitempty"`
+	CertificateOfLand	string		`gorm:"column:certificateOfland" json:"certificateOfland"`
 	CreatedAt			string		`gorm:"column:created_at" json:"created_at,omitempty"`
 	ModifiedAt 			string		`gorm:"column:modified_at" json:"modified_at,omitempty"`
 	DeletedAt 			string		`gorm:"column:deleted_at" json:"deleted_at,omitempty"`
@@ -65,8 +63,6 @@ type Transaction struct {
 	ID					int				`gorm:"column:id" json:"id,omitempty"`
 	CredentialId		int				`gorm:"column:credentialId" json:"credentialId,omitempty"`
 	ParkingId			int				`gorm:"column:parkingId" json:"parkingId,omitempty"`
-	Credential			Credential		`json:"credential,omitempty,omitempty"`
-	Parking				Parking			`json:"parking,omitempty,omitempty"`
 	Licence				string			`gorm:"column:licence" json:"licence,omitempty"`
 	PhoneNumber			string			`gorm:"column:phoneNumber" json:"phoneNumber,omitempty"`
 	RequestedPayment	string			`gorm:"column:requestedPayment" json:"requestedPayment,omitempty"`
@@ -77,7 +73,7 @@ type Transaction struct {
 	Status				int				`gorm:"column:status" json:"status,omitempty"`
 	ReasonMsg			string			`gorm:"column:reasonMsg" json:"reasonMsg,omitempty"`
 	CreatedAt			string			`gorm:"column:created_at" json:"created_at,omitempty"`
-	ModifiedAt			string			`gorm:"column:modified_at" json:"modified_at"`
+	ModifiedAt			string			`gorm:"column:modified_at" json:"modified_at,omitempty"`
 
 }
 

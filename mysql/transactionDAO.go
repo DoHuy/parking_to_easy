@@ -11,21 +11,23 @@ type TransactionDAO interface {
 	FindAllTransaction() ([]model.Transaction, error)
 	CreateTransaction(tran model.Transaction) error
 	FindAllTransactionOfUser(userId, status int) ([]model.GettingTransactionDetailResp, error)
-	FindAllTransactionOfOwner(parkingId int)([]model.GettingTransactionDetailResp, error)
+	FindAllTransactionOfOwner(parkingId, status int)([]model.GettingTransactionDetailResp, error)
+	ModifyTransaction(transactionId, status int) error
+	FindTransactionById(id int) (model.Transaction, error)
 }
 
 func (db *DAO)CalTotalAmountOfParking(id string) (int, error) {
+	const FINISHED = 5
 	type Data struct {
 		Total	int		`json:"total"`
 	}
 	var data Data
-	status := "ACCEPTED"
-	err := db.connection.Raw("SELECT SUM(amount) AS total FROM transactions WHERE parkingId=? AND `status`=?", id, status).Scan(&data).Error
+	err := db.connection.Raw("SELECT SUM(amount) AS total FROM transactions WHERE parkingId=? AND `status`=?", id, FINISHED).Scan(&data).Error
 	if err != nil {
 		return 0, nil
 	}
 	fmt.Println("DATA:::",data)
-	return data.Total, nil
+	return data.Total/1000, nil
 }
 
 func (db *DAO)FindTransactionOfUser(id int) ([]model.Transaction, error) {
@@ -56,15 +58,15 @@ func (db *DAO)CreateTransaction(transaction model.Transaction) error{
 
 func (db *DAO)FindAllTransactionOfUser(userId, status int) ([]model.GettingTransactionDetailResp, error){
 	var output []model.GettingTransactionDetailResp
-	sql := `SELECT tran.id, tran.startTime, tran.endTime, tran.licence, p.address as address, tran.amount, tran.status,
-			tran.created_at, tran.phoneNumber as userPhoneNumber, o.phoneNumber as hostPhoneNumber, tran.parkingId 
-			FROM transactions as tran 
-			INNER JOIN parkings as p 
-			ON tran.parkingId = p.id 
-			INNER JOIN owners as o 
-			ON p.ownerId = o.credentialId 
-			WHERE tran.credentialId=? AND tran.status=?;
-`
+
+	sql := `SELECT id, startTime, endTime, licence, address, amount, status, created_at, userPhoneNumber, hostPhoneNumber  
+			FROM (SELECT tran.id, tran.startTime startTime, tran.endTime endTime, tran.licence, p.address as address, 
+					tran.amount, tran.status status, tran.created_at created_at, tran.phoneNumber userPhoneNumber, 
+					o.phoneNumber hostPhoneNumber 
+					FROM transactions as tran 
+					INNER JOIN parkings as p ON tran.parkingId = p.id 
+					INNER JOIN owners as o ON p.ownerId = o.credentialId 
+					WHERE tran.credentialId=? AND tran.status=?) AS tb`
 	err := db.connection.Raw(sql, userId, status).Scan(&output).Error
 	if err != nil {
 		return []model.GettingTransactionDetailResp{}, err
@@ -72,19 +74,38 @@ func (db *DAO)FindAllTransactionOfUser(userId, status int) ([]model.GettingTrans
 	return output, nil
 }
 
-func (db *DAO)FindAllTransactionOfOwner(parkingId int)([]model.GettingTransactionDetailResp, error){
+func (db *DAO)FindAllTransactionOfOwner(parkingId, status int)([]model.GettingTransactionDetailResp, error){
 	var output []model.GettingTransactionDetailResp
-	sql := `SELECT tran.startTime, tran.endTime, tran.licence, p.address as address, tran.amount, tran.status,
-			tran.created_at, tran.phoneNumber as userPhoneNumber, o.phoneNumber as hostPhoneNumber, tran.parkingId 
-			FROM transactions as tran 
-			INNER JOIN parkings as p 
-			ON tran.parkingId = p.id 
-			INNER JOIN owners as o 
-			ON p.ownerId = o.credentialId 
-			WHERE tran.parkingId=?`
-	err := db.connection.Raw(sql,parkingId).Scan(&output).Error
+	sql := `SELECT id, startTime, endTime, licence, address, amount, status, created_at, userPhoneNumber, hostPhoneNumber  
+			FROM (SELECT tran.id, tran.startTime startTime, tran.endTime endTime, tran.licence, p.address as address, 
+					tran.amount, tran.status status, tran.created_at created_at, tran.phoneNumber userPhoneNumber, 
+					o.phoneNumber hostPhoneNumber 
+					FROM transactions as tran 
+					INNER JOIN parkings as p ON tran.parkingId = p.id 
+					INNER JOIN owners as o ON p.ownerId = o.credentialId 
+					WHERE tran.parkingId=? AND tran.status=?) AS tb`
+	err := db.connection.Raw(sql,parkingId, status).Scan(&output).Error
 	if err != nil {
 		return []model.GettingTransactionDetailResp{}, err
 	}
+	fmt.Println("OUTPUSADADSAD:::", output)
 	return output, nil
+}
+
+func (db *DAO)ModifyTransaction(transactionId, status int) error{
+	err := db.connection.Exec("UPDATE transactions SET `status`=? WHERE id=?", status, transactionId).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (db *DAO)FindTransactionById(id int) (model.Transaction, error) {
+	var transaction model.Transaction
+	err := db.connection.Raw("SELECT* FROM transactions WHERE id=?", id).Scan(&transaction).Error
+	if err != nil {
+		return model.Transaction{}, err
+	}
+
+	return transaction, nil
 }

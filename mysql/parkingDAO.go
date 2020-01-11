@@ -9,7 +9,7 @@ import (
 type ParkingDAO interface {
 	CreateNewParkingOfOwner(newParking interface{})  error
 	CreateNewParkingByAdmin(newParking interface{}) error
-	ChangStatusParking(updatedParking model.Parking)  error
+	ChangStatusParking(input model.VerifyingParkingInput)  error
 	FindParkingByID(id string) (model.Parking, error)
 	FindParkingByOwnerId(ownerId string) (model.Owner, error)
 	GetAllParking() ([]model.Parking, error)
@@ -47,8 +47,8 @@ func (db *DAO) CreateNewParkingByAdmin(newParking interface{}) error {
 	return nil
 }
 
-func (db *DAO)ChangStatusParking(updatedParking model.Parking)  error {
-	err := db.connection.Exec("UPDATE parkings SET `status`=?, modified_at=? WHERE id=?", updatedParking.Status,updatedParking.ModifiedAt, updatedParking.ID).Error
+func (db *DAO)ChangStatusParking(input model.VerifyingParkingInput)  error {
+	err := db.connection.Exec("UPDATE parkings SET `status`=?, modified_at=? WHERE id=?", input.Status, input.ModifiedAt, input.ID).Error
 	if err != nil {
 		fmt.Println("ERRR:::::", err)
 		return err
@@ -76,7 +76,7 @@ func (db *DAO)FindParkingByOwnerId(ownerId string) (model.Owner, error) {
 	if err != nil {
 		return model.Owner{}, err
 	}
-	err  = db.connection.Raw("SELECT id, address, capacity, status FROM parkings WHERE ownerId=? AND deleted_at=\"\"", ownerId).Scan(&parkings).Error
+	err  = db.connection.Raw("SELECT id, address, capacity, certificateOfland, status, blockAmount, `describe`  FROM parkings WHERE ownerId=? AND deleted_at=\"\"", ownerId).Scan(&parkings).Error
 	if err != nil {
 		return model.Owner{}, err
 	}

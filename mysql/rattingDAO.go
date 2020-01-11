@@ -1,10 +1,13 @@
 package mysql
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/DoHuy/parking_to_easy/model"
+)
 
 type RatingDAO interface {
 	AverageStarsOfParking(id string) (float64, error)
-	CreateVoteOfUser(data interface{}) error
+	CreateRating(rating model.Rating) error
 }
 
 func (db *DAO)AverageStarsOfParking(id string) (float64, error) {
@@ -20,8 +23,8 @@ func (db *DAO)AverageStarsOfParking(id string) (float64, error) {
 	return data.Average, nil
 }
 
-func (db *DAO)CreateVoteOfUser(data interface{}) error {
-	err := db.connection.Create(&data).Error
+func (db *DAO)CreateRating(rating model.Rating) error {
+	err := db.connection.Create(&rating).Error
 	if err != nil {
 		return err
 	}
