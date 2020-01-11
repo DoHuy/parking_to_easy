@@ -35,6 +35,17 @@ func NewService(dao *mysql.DAO) *TransactionService{
 	}
 }
 
+func (self *TransactionService)CheckSelfBooking(parkingIdOfTran, credentialId int) bool {
+	var parking model.Parking
+	var parkingIface mysql.ParkingDAO
+	parkingIface = self.Dao
+	parking,_ = parkingIface.FindParkingByID(fmt.Sprintf("%d", parkingIdOfTran))
+	if parking.OwnerId != credentialId {
+		return true
+	}
+	return false
+
+}
 func (self *TransactionService)CustomTransaction(payload model.Payload, transaction model.Transaction) (model.Transaction, error){
 		transaction.CreatedAt    = time.Now().Format(time.RFC3339)
 		transaction.CredentialId = payload.UserId
@@ -80,7 +91,7 @@ func (self *TransactionService)GetTransactionOfOwnerWithStatus(data interface{})
 	err := utils.BindRawStructToRespStruct(data, &input)
 	var transactionIface mysql.TransactionDAO
 	transactionIface = self.Dao
-	transactions, err := transactionIface.FindAllTransactionOfOwner(input.ParkingId)
+	transactions, err := transactionIface.FindAllTransactionOfOwner(input.ParkingId,input.Status)
 	if err != nil {
 		return []model.GettingTransactionDetailResp{}, err
 	}
@@ -104,8 +115,72 @@ func (self *TransactionService)GetTransactionOfUserWithStatus(data interface{}) 
 
 }
 
-func (self *TransactionService)BreakATransaction() error{
+func (self *TransactionService)NextStepTransaction(data interface{}) error{
+	var input model.ChangingStateTransactionInput
+	fmt.Println("before Data::::", data)
+	err := utils.BindRawStructToRespStruct(data, &input)
+	fmt.Println("After data::::", input)
+	if err != nil {
+		return err
+	}
+	var transactionIface mysql.TransactionDAO
+	transactionIface = self.Dao
+	err = transactionIface.ModifyTransaction(input.TransactionId, input.Status)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
+func (self *TransactionService)CheckPermissionForTransaction(transactionId, credentialId int) bool {
+	var transaction model.Transaction
+	var parking model.Parking
+	var transactionIface mysql.TransactionDAO
+	var parkingIface mysql.ParkingDAO
+	transactionIface = self.Dao
+	transaction, _ = transactionIface.FindTransactionById(transactionId)
+	if credentialId == transaction.CredentialId {
+		return true
+	}
+	parkingIface = self.Dao
+	parking,_ = parkingIface.FindParkingByID(fmt.Sprintf("%d",transaction.ParkingId))
+	if parking.OwnerId == credentialId {
+		return true
+	}
+	return false
 
+}
+
+func (self *TransactionService)CheckRuleStateTransaction(transactionId, status int) bool {
+	var transaction model.Transaction
+	var transactionIface mysql.TransactionDAO
+	transactionIface = self.Dao
+	transaction,_ = transactionIface.FindTransactionById(transactionId)
+	if transaction.Status == 1 && (status == 2 || status == 4) {
+		return true
+	} else if transaction.Status == 2 && (status == 3 || status == 5) {
+		return true
+	} else if transaction.Status == 3 && status == 5 {
+		return true
+	}
+
+	return false
+}
+
+func (self *TransactionService)CheckParkingOwnerOfTransaction(ownerId, parkingId int) bool {
+	var parking model.Parking
+	var parkingIface mysql.ParkingDAO
+	parkingIface = self.Dao
+	parking, _ = parkingIface.FindParkingByID(fmt.Sprintf("%d", parkingId))
+	if parking.OwnerId == ownerId {
+		return true
+	}
+
+	return false
+
+}
+
+// neu trang thai bang 2 thi tru tien cua user
+func (self *TransactionService)ExecTransactionBusinesses(status int) error{
 	return nil
 }

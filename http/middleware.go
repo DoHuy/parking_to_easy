@@ -343,8 +343,18 @@ func (mid *MiddleWareService)BeforeVerifyParking(c *gin.Context) model.Middlewar
 		return model.Middleware{StatusCode: 503, Message: "Hệ thống không hỗ trợ dịch vụ này"}
 	}
 	// convert data
+	var input model.VerifyingParkingInput
+	rawBody := utils.GetBodyRequest(c)
+	err = json.Unmarshal(rawBody, &input)
 	id := c.Param("id")
-	return model.Middleware{Data: id}
+	input.ID = id
+	// kiem tra su ton tai cua parking
+	service := business_logic.NewParkingService(mid.DAO)
+	if checked := service.CheckExistedParking(id); checked != true{
+		return model.Middleware{StatusCode: 404, Message: "Bãi đỗ không tồn tại"}
+	}
+
+	return model.Middleware{Data: input}
 }
 
 func (mid *MiddleWareService)AfterGetAllParkings(parkings []model.Parking) model.Middleware {
@@ -443,13 +453,8 @@ func (mid *MiddleWareService)BeforeDisableOwner(c *gin.Context) model.Middleware
 	if role != "admin" {
 		return model.Middleware{StatusCode: 503, Message: "Hệ thống không hỗ trợ dịch vụ này"}
 	}
-	type DataStruct struct {
-		ID			string	`json:"id"`
-		Status		string	`json:"status"`
-		ModifiedAt	string	`json:"modified_at"`
-	}
-
-	return model.Middleware{Data:DataStruct{ID: c.Param("id"), Status: "DISABLED", ModifiedAt:time.Now().Format(time.RFC3339)}}
+	fmt.Println("DATAAAAA::::::", c.Param("id"))
+	return model.Middleware{Data:model.DataStruct{CredentialId: c.Param("id"), Status: "DISABLED", ModifiedAt:time.Now().Format(time.RFC3339)}}
 }
 
 func (mid *MiddleWareService)BeforeModifyParkingByOwner(c *gin.Context) model.Middleware{
@@ -638,7 +643,7 @@ func (mid *MiddleWareService)BeforeGetAllTransaction(c *gin.Context)model.Middle
 	if err != nil {
 		return model.Middleware{StatusCode: 500, Message: "Hệ thống có sự cố"}
 	}
-	if payload.Role == "admin" {
+	if payload.Role != "admin" {
 		return model.Middleware{StatusCode: 503, Message: "Dịch vụ không sẵn có"}
 	}
 	return model.Middleware{}
@@ -660,9 +665,17 @@ func (mid *MiddleWareService)BeforeRating(c *gin.Context) model.Middleware{
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
 	//convert data
-	raw := utils.GetBodyRequest(c)
+	var payload model.Payload
+	secretKey  := string(config.GetSecretKey())
+	raw, _ := auth.Decode(token, secretKey)
+	err = json.Unmarshal(raw, &payload)
+	if err != nil {
+		return model.Middleware{StatusCode: 500, Message: "Hệ thống có sự cố"}
+	}
+	rawBody := utils.GetBodyRequest(c)
 	var rating model.Rating
-	err = json.Unmarshal(raw, &rating)
+	err = json.Unmarshal(rawBody, &rating)
+	rating.CredentialId = payload.UserId
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Hệ thống có sự cố"}
 	}
@@ -713,6 +726,10 @@ func (mid *MiddleWareService)BeforeCreateNewTransaction(c *gin.Context) model.Mi
 	rawBody := utils.GetBodyRequest(c)
 	err = json.Unmarshal(rawBody, &transaction)
 	service := business_logic.NewService(mid.DAO)
+	flag := service.CheckSelfBooking(transaction.ParkingId, transaction.CredentialId)
+	if flag != true {
+		return model.Middleware{StatusCode: 403, Message: "Bạn không được tự đặt chỗ cho bãi của chính mình"}
+	}
 	converted, err := service.CustomTransaction(payload, transaction)
 	//fmt.Println("transaction ::: in middleware", converted)
 	return model.Middleware{Data: converted}
@@ -744,9 +761,15 @@ func (mid *MiddleWareService)BeforeGetAllTransactionOfOwner(c *gin.Context) mode
 	if payload.Role == "admin" {
 		return model.Middleware{StatusCode: 503, Message: "Dịch vụ không sẵn có"}
 	}
-	// convert data
+	// check bai do thuoc chu so huu
+	status,_ := strconv.Atoi(c.Param("status"))
 	parkingId,_ := strconv.Atoi(c.Param("parkingId"))
-	return model.Middleware{Data: model.GetTransactionOfOwnerWithStatusInput{ParkingId: parkingId}}
+	service := business_logic.NewService(mid.DAO)
+	if flag := service.CheckParkingOwnerOfTransaction(payload.UserId, parkingId); flag != true {
+		return model.Middleware{StatusCode: 403, Message: "Bạn không có quyền truy cập tới bãi đỗ này"}
+	}
+	// convert data
+	return model.Middleware{Data: model.GetTransactionOfOwnerWithStatusInput{ParkingId: parkingId, Status: status}}
 }
 
 func (mid *MiddleWareService)BeforeDeclineTransaction(c *gin.Context) model.Middleware{
@@ -772,4 +795,45 @@ func (mid *MiddleWareService)BeforeDeclineTransaction(c *gin.Context) model.Midd
 		return model.Middleware{StatusCode: 500, Message: "Hệ thống có sự cố"}
 	}
 	return model.Middleware{Data: payload.UserId}
+}
+
+func (mid *MiddleWareService)BeforeChangeStateTransaction(c *gin.Context) model.Middleware{
+	token, err := utils.GetTokenFromHeader(c)
+	if err != nil {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check format token
+	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	if checked != true {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check expired token
+	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	if checkedExpired == true {
+		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
+	}
+	var payload model.Payload
+	secretKey  := string(config.GetSecretKey())
+	raw, _ := auth.Decode(token, secretKey)
+	err = json.Unmarshal(raw, &payload)
+	if err != nil {
+		return model.Middleware{StatusCode: 500, Message: "Hệ thống có sự cố"}
+	}
+	// convert data
+	var input model.ChangingStateTransactionInput
+	rawBody  := utils.GetBodyRequest(c)
+	err = json.Unmarshal(rawBody, &input)
+	input.CredentialId = payload.UserId
+	// check xem co phai chu cua bai, hay la khach book
+	service := business_logic.NewService(mid.DAO)
+	flag := service.CheckPermissionForTransaction(input.TransactionId, input.CredentialId)
+	if flag != true {
+		return model.Middleware{StatusCode: 403, Message:"Không có quyền thao tác với giao dịch này"}
+	}
+	// check changing status
+	flag = service.CheckRuleStateTransaction(input.TransactionId, input.Status)
+	if flag == false {
+		return model.Middleware{StatusCode:400, Message: "Cập nhật trạng thái khống đúng luật"}
+	}
+	return model.Middleware{Data: input}
 }

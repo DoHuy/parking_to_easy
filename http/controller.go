@@ -186,25 +186,22 @@ func (con *ControllingService) RemoveParkingOfOwner(c *gin.Context) {
 	return
 }
 
-func (con *ControllingService) GetAllOwners(c *gin.Context) {
+func (con *ControllingService)GetAllOwners(c *gin.Context) {
 	c.Header("Access-Control-Allow-Origin", "*")
 	var middle model.Middleware
 	middle = con.Middleware.BeforeGetAllOwners(c)
 	if middle.StatusCode != 0 {
-		fmt.Println("ERRR:::::", middle.Message)
 		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
 		return
 	}
 	// implement
-	var ownerDAOIface mysql.OwnerDAO
-	ownerDAOIface = con.DAO
-	owners, totalPage, err := ownerDAOIface.GetAllOwners(c.Param("limit"), c.Param("offset"))
+	service := business_logic.NewOwnerService(con.DAO)
+	owners, err := service.GetAllOwners(middle.Data)
 	if err != nil {
-		fmt.Println("sádasdsadasda", err)
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
 		return
 	}
-	c.JSON(http.StatusOK, map[string]interface{}{"owners": owners, "totalPage": totalPage})
+	c.JSON(http.StatusOK, owners)
 	return
 }
 
@@ -216,16 +213,18 @@ func (con *ControllingService) DisableOwner(c *gin.Context) {
 		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
 		return
 	}
-	var ownerIface = con.DAO
-	err := ownerIface.ChangeStatusOwner(middle.Data)
+	service := business_logic.NewOwnerService(con.DAO)
+	fmt.Println("middle:::", middle.Data)
+	err := service.DisableOwner(middle.Data)
 	if err != nil {
-		fmt.Println("ERRORR::::::::::", err)
+		fmt.Println("eRRERERERE", err)
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message:"Vô hiệu hóa thất bại, hệ thống có sự cố"})
 		return
 	}
 	c.JSON(http.StatusOK, model.SuccessMessage{Message:"Vô hiệu hóa thành công"})
 	return
 }
+
 func (con *ControllingService) CreateNewTransaction(c *gin.Context) {
 	var middle model.Middleware
 	middle = con.Middleware.BeforeCreateNewTransaction(c)
@@ -304,11 +303,23 @@ func (con *ControllingService) GetAllTransaction(c *gin.Context) {
 	c.JSON(http.StatusOK, transactions)
 	return
 }
-func (con *ControllingService) DeclineTransaction(c *gin.Context) {
-	
-}
-func (con *ControllingService) AcceptTransaction(c *gin.Context) {
 
+func (con *ControllingService) ChangeStateTransaction(c *gin.Context) {
+	var middle model.Middleware
+	middle = con.Middleware.BeforeChangeStateTransaction(c)
+	if middle.StatusCode != 0 {
+		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
+		return
+	}
+
+	service := business_logic.NewService(con.DAO)
+	err := service.NextStepTransaction(middle.Data)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
+		return
+	}
+	c.JSON(http.StatusOK, model.SuccessMessage{Message: "Thay đổi trạng thái thành công"})
+	return
 }
 func (con *ControllingService) RatingParking(c *gin.Context) {
 	var middle model.Middleware
@@ -317,9 +328,8 @@ func (con *ControllingService) RatingParking(c *gin.Context) {
 		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
 		return
 	}
-	var ratingIface mysql.RatingDAO
-	ratingIface = con.DAO
-	err := ratingIface.CreateVoteOfUser(middle.Data)
+	service := business_logic.NewRatingService(con.DAO)
+	err := service.CreateVoteOfUser(middle.Data)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
 		return
@@ -462,21 +472,8 @@ func (con *ControllingService) VerifyParking(c *gin.Context) {
 		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
 		return
 	}
-	var id string
-	raw, _ := json.Marshal(middle.Data)
-	err := json.Unmarshal(raw, &id)
-	var parkingIface mysql.ParkingDAO
-	parkingIface = con.DAO
-	parking, err := parkingIface.FindParkingByID(id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Không tồn tại parking này"})
-		return
-	}
-	parking.Status = "APPROVED"
-	parking.ModifiedAt = time.Now().Format(time.RFC3339)
-	//////
-	// Verify parking
-	err = parkingIface.ChangStatusParking(parking)
+	service := business_logic.NewParkingService(con.DAO)
+	err := service.VerifyParking(middle.Data)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Không xac thực được parking này"})
 		return
@@ -601,18 +598,14 @@ func (con *ControllingService) CalculateAmountParking(c *gin.Context) {
 		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
 		return
 	}
-	var ratingIface mysql.RatingDAO
-	ratingIface = con.DAO
-	var transactionIface mysql.TransactionDAO
-	transactionIface = con.DAO
-	points, err := transactionIface.CalTotalAmountOfParking(c.Param("id"))
-	stars, err 	:= ratingIface.AverageStarsOfParking(c.Param("id"))
+	service := business_logic.NewParkingService(con.DAO)
+	resp, err := service.CalculateAmountParkingAndVote(middle.Data.(string))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
 		return
 	}
-	starString := fmt.Sprintf("%.2f", stars)
-	c.JSON(http.StatusOK, model.CalculateAmountParkingResp{Points: string(points), Stars: starString})
+	//starString := fmt.Sprintf("%.2f", stars)
+	c.JSON(http.StatusOK, resp)
 	return
 }
 
