@@ -278,6 +278,10 @@ func (con *ControllingService) GetAllTransactionOfOwner(c *gin.Context){
 
 	service := business_logic.NewService(con.DAO)
 	transactions, err := service.GetTransactionOfOwnerWithStatus(middle.Data)
+	if len(transactions) <= 0 {
+		c.JSON(http.StatusNotFound, model.ErrorMessage{Message: "Bạn không có yêu cầu nào"})
+		return
+	}
 	if err != nil {
 		c.JSON(middle.StatusCode, model.ErrorMessage{Message: "Hệ thống có sự cố"})
 		return

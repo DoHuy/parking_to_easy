@@ -113,7 +113,7 @@ func (db *DAO)FindTransactionById(id int) (model.Transaction, error) {
 
 func (db *DAO)FindTheLastTransaction(credentialId int) (model.Transaction, error) {
 	var transaction model.Transaction
-	err := db.connection.Raw("SELECT* FROM transactions WHERE credentialId=? ORDER BY id desc limit 1 ", credentialId).Scan(&transaction).Error
+	err := db.connection.Raw("SELECT* FROM transactions WHERE credentialId=? AND status BETWEEN 1 AND 3  ORDER BY id desc", credentialId).Scan(&transaction).Error
 	if err != nil {
 		return model.Transaction{}, err
 	}

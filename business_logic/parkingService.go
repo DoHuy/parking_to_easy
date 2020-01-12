@@ -1,6 +1,7 @@
 package business_logic
 
 import (
+	"fmt"
 	"github.com/DoHuy/parking_to_easy/model"
 	"github.com/DoHuy/parking_to_easy/mysql"
 	"github.com/DoHuy/parking_to_easy/utils"
@@ -51,6 +52,17 @@ func (self *ParkingService)CheckExistedParking(id string) bool {
 	parkingIface = self.Dao
 	_, err := parkingIface.FindParkingByID(id)
 	if err != nil {
+		return false
+	}
+	return true
+}
+
+func (self *ParkingService)CheckExistedLocation(longitude, latitude string) bool {
+	var parkingIface mysql.ParkingDAO
+	parkingIface = self.Dao
+	_, err := parkingIface.FindParkingByLongLat(longitude, latitude)
+	if err != nil {
+		fmt.Println("ERR ::::", err)
 		return false
 	}
 	return true

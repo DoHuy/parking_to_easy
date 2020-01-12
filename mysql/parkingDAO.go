@@ -15,6 +15,7 @@ type ParkingDAO interface {
 	GetAllParking() ([]model.Parking, error)
 	ModifyParking(data interface{}) error
 	DeleteParking(data interface{}) error
+	FindParkingByLongLat(longitude, latitude string)([]model.Transaction, error)
 }
 
 func (db *DAO) CreateNewParkingOfOwner(newParking interface{})  error{
@@ -132,4 +133,14 @@ func (db *DAO)DeleteParking(data interface{}) error {
 		return err
 	}
 	return nil
+}
+
+func (db *DAO)FindParkingByLongLat(longitude, latitude string)([]model.Transaction, error) {
+	var transactions []model.Transaction
+	err := db.connection.Raw("SELECT* FROM parkings WHERE longitude=? AND latitude=?", longitude, latitude).Scan(&transactions).Error
+	if err != nil {
+		fmt.Println("erereereIn DAo", err)
+		return []model.Transaction{}, err
+	}
+	return transactions, nil
 }

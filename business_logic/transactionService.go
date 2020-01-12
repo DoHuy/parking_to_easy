@@ -48,16 +48,17 @@ func (self *TransactionService)CheckSelfBooking(parkingIdOfTran, credentialId in
 	return false
 
 }
-func (self *TransactionService)VerifyBookingStartTime(credentialId int, start string) bool{
+func (self *TransactionService)VerifyBookingStartTime(credentialId int, start string, end string) bool{
 	var transactionIface mysql.TransactionDAO
 	transactionIface = self.Dao
 	transaction, err := transactionIface.FindTheLastTransaction(credentialId)
 	if err != nil && err.Error() == "record not found" {
 		return true
 	}
-	lastEndTime, err := time.Parse(time.RFC3339, transaction.EndTime)
 	currentStartTime, err := time.Parse(time.RFC3339, start)
-	if currentStartTime.Unix() - lastEndTime.Unix() >= 0 {
+	//currentEndTime, err := time.Parse(time.RFC3339, end)
+	endTime, err := time.Parse(time.RFC3339, transaction.EndTime)
+	if currentStartTime.Unix() >= endTime.Unix() {
 		return true
 	}
 	return false

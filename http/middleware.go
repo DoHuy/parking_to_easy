@@ -294,6 +294,11 @@ func (mid *MiddleWareService)BeforeCreateNewParkingByOwner(c *gin.Context) model
 	newParking.OwnerId = payload.UserId
 	newParking.CreatedAt = time.Now().Format(time.RFC3339)
 	newParking.Status	 = "PENDING"
+	service := business_logic.NewParkingService(mid.DAO)
+	checkedLocation := service.CheckExistedLocation(newParking.Longitude, newParking.Latitude)
+	if checkedLocation == false {
+		return model.Middleware{StatusCode:400, Message: "Bạn đã chia sẻ vị trí này rồi"}
+	}
 	return model.Middleware{Data: newParking}
 }
 
@@ -741,7 +746,7 @@ func (mid *MiddleWareService)BeforeCreateNewTransaction(c *gin.Context) model.Mi
 		return model.Middleware{StatusCode: 403, Message: "Bạn không được tự đặt chỗ cho bãi của chính mình"}
 	}
 	converted, err := service.CustomTransaction(payload, transaction)
-	flagCheckTime := service.VerifyBookingStartTime(converted.CredentialId, converted.StartTime)
+	flagCheckTime := service.VerifyBookingStartTime(converted.CredentialId, converted.StartTime, converted.EndTime)
 	if flagCheckTime != true {
 		return model.Middleware{StatusCode: 400, Message: "Ngày bắt đầu của session mới không được trước ngày kết thúc của session trc đó"}
 	}
