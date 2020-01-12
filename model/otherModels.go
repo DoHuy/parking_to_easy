@@ -1,6 +1,5 @@
 package model
 
-
 type CheckingParkingResp struct {
 	Message string 	`json:"message"`
 }
@@ -147,4 +146,10 @@ type VerifyingParkingInput struct {
 	Status		string		`json:"status"`
 	ID			string		`json:"id"`
 	ModifiedAt	string		`json:"modified_at"`
+}
+
+type GettingAllOwnersOutput struct {
+	Owner	Owner		`json:"owner"`
+	Stars	float64		`json:"stars"`
+	Votes	int			`json:"votes"`
 }

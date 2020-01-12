@@ -14,6 +14,7 @@ type TransactionDAO interface {
 	FindAllTransactionOfOwner(parkingId, status int)([]model.GettingTransactionDetailResp, error)
 	ModifyTransaction(transactionId, status int) error
 	FindTransactionById(id int) (model.Transaction, error)
+	FindTheLastTransaction(credentialId int) (model.Transaction, error)
 }
 
 func (db *DAO)CalTotalAmountOfParking(id string) (int, error) {
@@ -107,5 +108,14 @@ func (db *DAO)FindTransactionById(id int) (model.Transaction, error) {
 		return model.Transaction{}, err
 	}
 
+	return transaction, nil
+}
+
+func (db *DAO)FindTheLastTransaction(credentialId int) (model.Transaction, error) {
+	var transaction model.Transaction
+	err := db.connection.Raw("SELECT* FROM transactions WHERE credentialId=? ORDER BY id desc limit 1 ", credentialId).Scan(&transaction).Error
+	if err != nil {
+		return model.Transaction{}, err
+	}
 	return transaction, nil
 }

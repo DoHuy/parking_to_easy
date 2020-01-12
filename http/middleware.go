@@ -46,7 +46,11 @@ func (mid *MiddleWareService)BeforeUpload(c *gin.Context, token string) model.Mi
 	}
 	form,err := c.MultipartForm()
 	files := form.File["upload[]"]
+	if form == nil {
+		return model.Middleware{StatusCode: 400, Message: "form rỗng"}
+	}
 	if err != nil {
+		fmt.Println("ererererer", err)
 		return model.Middleware{StatusCode: 400, Message: err.Error()}
 	}
 	//var images []string
@@ -348,10 +352,14 @@ func (mid *MiddleWareService)BeforeVerifyParking(c *gin.Context) model.Middlewar
 	err = json.Unmarshal(rawBody, &input)
 	id := c.Param("id")
 	input.ID = id
+	input.ModifiedAt = time.Now().Format(time.RFC3339)
 	// kiem tra su ton tai cua parking
 	service := business_logic.NewParkingService(mid.DAO)
 	if checked := service.CheckExistedParking(id); checked != true{
 		return model.Middleware{StatusCode: 404, Message: "Bãi đỗ không tồn tại"}
+	}
+	if input.Status != "REJECTED" && input.Status != "APPROVED" {
+		return model.Middleware{StatusCode: 400, Message: "Trạng thái cập nhật không đúng"}
 	}
 
 	return model.Middleware{Data: input}
@@ -726,12 +734,17 @@ func (mid *MiddleWareService)BeforeCreateNewTransaction(c *gin.Context) model.Mi
 	rawBody := utils.GetBodyRequest(c)
 	err = json.Unmarshal(rawBody, &transaction)
 	service := business_logic.NewService(mid.DAO)
-	flag := service.CheckSelfBooking(transaction.ParkingId, transaction.CredentialId)
+	flag := service.CheckSelfBooking(transaction.ParkingId, payload.UserId)
+	//fmt.Println("transaction ::: in middleware", converted)
+	fmt.Println("FLAG ::: ::: ::", flag)
 	if flag != true {
 		return model.Middleware{StatusCode: 403, Message: "Bạn không được tự đặt chỗ cho bãi của chính mình"}
 	}
 	converted, err := service.CustomTransaction(payload, transaction)
-	//fmt.Println("transaction ::: in middleware", converted)
+	flagCheckTime := service.VerifyBookingStartTime(converted.CredentialId, converted.StartTime)
+	if flagCheckTime != true {
+		return model.Middleware{StatusCode: 400, Message: "Ngày bắt đầu của session mới không được trước ngày kết thúc của session trc đó"}
+	}
 	return model.Middleware{Data: converted}
 }
 

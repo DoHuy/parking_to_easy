@@ -3,16 +3,16 @@
     "username": "root",
     "password": "123",
     "database_name": "parkings",
-    "address": "database"
+    "address": "localhost:8881"
   },
   "secret_key": "abcdef123456789",
-  "max_uploaded_file_size":  100000,
+  "max_uploaded_file_size":  1000000,
   "environment": {
-    "hostname": "localhost",
+    "hostname": "10.124.0.32",
     "port": "8085"
   },
   "redis": {
-    "address": "rds:6379",
+    "address": "localhost:8882",
     "topic": ["JWT", "DEVICES"],
     "networks": "tcp"
   },

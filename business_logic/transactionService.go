@@ -39,8 +39,25 @@ func (self *TransactionService)CheckSelfBooking(parkingIdOfTran, credentialId in
 	var parking model.Parking
 	var parkingIface mysql.ParkingDAO
 	parkingIface = self.Dao
+	fmt.Println("parkingIdOfTran, credentialId", parkingIdOfTran, credentialId)
 	parking,_ = parkingIface.FindParkingByID(fmt.Sprintf("%d", parkingIdOfTran))
+	fmt.Println("parkingOwnerId, credentialId", parking.OwnerId, credentialId)
 	if parking.OwnerId != credentialId {
+		return true
+	}
+	return false
+
+}
+func (self *TransactionService)VerifyBookingStartTime(credentialId int, start string) bool{
+	var transactionIface mysql.TransactionDAO
+	transactionIface = self.Dao
+	transaction, err := transactionIface.FindTheLastTransaction(credentialId)
+	if err != nil && err.Error() == "record not found" {
+		return true
+	}
+	lastEndTime, err := time.Parse(time.RFC3339, transaction.EndTime)
+	currentStartTime, err := time.Parse(time.RFC3339, start)
+	if currentStartTime.Unix() - lastEndTime.Unix() >= 0 {
 		return true
 	}
 	return false

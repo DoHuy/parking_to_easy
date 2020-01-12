@@ -72,7 +72,7 @@ func (db *DAO)FindParkingByOwnerId(ownerId string) (model.Owner, error) {
 	var parkings []model.Parking
 	var owner model.Owner
 
-	err := db.connection.Raw("SELECT fullName, phoneNumber, address, cmndImage, status, created_at FROM owners WHERE credentialId=?", ownerId).Scan(&owner).Error
+	err := db.connection.Raw("SELECT credentialId, fullName, phoneNumber, address, cmndImage, status, created_at FROM owners WHERE credentialId=?", ownerId).Scan(&owner).Error
 	if err != nil {
 		return model.Owner{}, err
 	}
