@@ -614,9 +614,33 @@ func (con *ControllingService) CalculateAmountParking(c *gin.Context) {
 }
 
 func (con *ControllingService)SaveTokenFireBase(c *gin.Context) {
-
+	var middle model.Middleware
+	middle = con.Middleware.BeforeCreateAndRemoveDeviceToken(c)
+	if middle.StatusCode != 0 {
+		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
+		return
+	}
+	service := business_logic.NewDeviceService(con.DAO)
+	if err := service.SaveDeviceTokenOfUser(middle.Data); err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
+		return
+	}
+	c.JSON(http.StatusOK, model.SuccessMessage{Message: "Tạo token thành công"})
+	return
 }
 
 func (con *ControllingService)RemoveToken(c *gin.Context) {
-
+	var middle model.Middleware
+	middle = con.Middleware.BeforeCreateAndRemoveDeviceToken(c)
+	if middle.StatusCode != 0 {
+		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
+		return
+	}
+	service := business_logic.NewDeviceService(con.DAO)
+	if err := service.RemoveDeviceTokenOfUser(middle.Data); err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
+		return
+	}
+	c.JSON(http.StatusOK, model.SuccessMessage{Message: "Xóa token thành công"})
+	return
 }

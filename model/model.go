@@ -8,6 +8,7 @@ import (
 
 
 type UserDevice struct {
+	ID				int			`gorm:"column:id" json:"id,omitempty"`
 	DeviceToken		string		`gorm:"column:deviceToken" json:"deviceToken,omitempty"`
 	CredentialId	int			`gorm:"column:credentialId" json:"credentialId,omitempty"`
 }

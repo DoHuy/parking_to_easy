@@ -855,3 +855,29 @@ func (mid *MiddleWareService)BeforeChangeStateTransaction(c *gin.Context) model.
 	}
 	return model.Middleware{Data: input}
 }
+
+func (mid *MiddleWareService)BeforeCreateAndRemoveDeviceToken(c *gin.Context) model.Middleware{
+	token, err := utils.GetTokenFromHeader(c)
+	if err != nil {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check format token
+	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	if checked != true {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check expired token
+	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	if checkedExpired == true {
+		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
+	}
+	var input model.UserDevice
+	rawBody  := utils.GetBodyRequest(c)
+	err = json.Unmarshal(rawBody, &input)
+	var payload model.Payload
+	secretKey  := string(config.GetSecretKey())
+	raw, _ := auth.Decode(token, secretKey)
+	err = json.Unmarshal(raw, &payload)
+	input.CredentialId = payload.UserId
+	return model.Middleware{Data: input}
+}

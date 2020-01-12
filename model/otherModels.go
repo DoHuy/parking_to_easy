@@ -153,3 +153,11 @@ type GettingAllOwnersOutput struct {
 	Stars	float64		`json:"stars"`
 	Votes	int			`json:"votes"`
 }
+
+type TransactionTopicInput struct {
+	TransactionId	int			`json:"transactionId"`
+	CredentialId	int			`json:"credentialId"`
+	OwnerId			int			`json:"ownerId"`
+	OwnerTokensList []string	`json:"ownerTokensList"`
+	UserTokensList  []string	`json:"UserTokensList"`
+}
