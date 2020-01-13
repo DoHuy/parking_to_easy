@@ -9,3 +9,5 @@ vendors:
     rev: 09d84710e01a746165eadd36e85d25e0e1923cff
   - path: github.com/gocraft/work
     rev: 61759fb51303000f627b8f5410847bd0996c8d74
+  - path: github.com/firebase/firebase-admin-go
+    rev: 32728b0fc9f9486276937d8f50cdf75485c1293c
