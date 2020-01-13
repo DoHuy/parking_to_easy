@@ -17,5 +17,17 @@
     "networks": "tcp"
   },
   "token_expired": 10000,
-  "api_key": "AIzaSyCQfS5X15m146NhXo6wFnWOxb8nGvSjFs8"
+  "api_key": "AIzaSyCQfS5X15m146NhXo6wFnWOxb8nGvSjFs8",
+  "firebase_configs": {
+    "type": "service_account",
+    "project_id": "parkingtoeasy",
+    "private_key_id": "bc0b9085d009fbab695c60f05b174eadfbc65900",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCyl0GkgpD/lY8t\nlUCl8eYyeUDV1fu8oWJ47eBslRy7guqXVF/KlS05Oflle7oV3smdhBjbRMRYPKCF\n57owPH+ytiH7yJq1g8B8GYRuRhTPOJV/BJTpE4TpM32Cp8dFjLeeWoeL8U6S3zI5\nsFPk9JEZpD/HgrZHdRVzC57ptWTe/yzwNXq0XsjKM+d0Rs+DyD40dKL5dDk0009e\nzFwQFRyuVWZzRSp03CdL2Qq78DSNe/grtEHW68/9bE6t5+yTp9aHOAdGO/kjJHbb\nAegSreUB7d5eabCE6ZMEoCwGHnlzkcIna3nhAj5TG/KlENvx8VHW+wajHp0zWRQV\nG3gyyYJzAgMBAAECggEAE+hjg1ygoDUCSGEGW1k7QW4dyZh4Xt8YlIVjyobWtJpT\n3zmjEfiOGX56bBMeO7jhfaMPiEXCo1lixXp+2UitLXU7FY+Xm1tL9il8BzTdtfnH\nRGj01oR8AOjh+VINlxWoFElgKbvk999UgHTE7VVL5XFXQLyz6ARHt1LYzJGRZIAa\nusE4oNksKEhK7BbZkg/5d+jDC5pbsQjgc5ge6gNG8Y3v5jruJyQu+7Albg2qYp1r\nQmoybUaSLKAPardaO6b1Y9P3ngB491rP/ECGttuxWBNoy/Nl+5FWXh+Z3LAQiPse\nk1YeuhT7fpX18bymarcEHEDboVb2gDcALdn8RUZYWQKBgQDh5BlVJU1ASigNIsVu\nydYUg/0Nr9+Z81mxN2ZqSigt2l2x8BgOkBfZ2QJkdO9/2k2hXGXnMcd1Ia3/SzMF\nvbjllE/aEeKlfCAh1i+IRxbZNVL0zEXUqOaVd/HtcbxPI75W48FzXC1/5vNgJ0mc\nQI4Gf8m9EtJKvbAXnWEnFdoO+wKBgQDKZSvQi1fuvLA6Y/IM0jYFUdhsbt5klN9z\nWds2Zf24OIZqaPh/UrMXrlXdno1U+P3hWsHyKwU4xedpuj/30Dt4vpOausjm40eQ\n4tAh97GZ1TvvbYOmEizwJbXm0vig0pR7Prvgj6tSR7vaZAleKrA8PtteREDnatUA\ntoR4a8+g6QKBgDeXzIhA+uckmQDKmu5uLAq2hRPWQeCAnIVZzhHAmGzYfhCptzH2\nUnhhyQ3yHXNIxaw9sjKY9K6mEE1xM2hpTdTqkFBp8G6rwrixHteaL0xbrEPk9hal\nTsJgV6EJSb/sWw7FVLnQaL4+l40Ffj8/P/TnhD3NIQYV8v2M1PkqjpT7AoGAIP61\nUd4li6n/IMXCZAyw+dUJ70NzxfnvI6L2dbvSzQGKCDbsq/UTdTzairKaX8vnt6FQ\nFOamh0bcHwRaAVBVIa4P6h2hOuK6fAg93gu/TFDS4Il9+MjlwpCjQuoJ1k3+Hslv\nX4CMcXF4UnYUgOF8sZWdtZRy8EceSmt21RreUmECgYBrunWlM/HHxGUrtScoqZPD\ng9gtqpxYR6G9uNci55TSu5OWu8mc6e9MrHmngXAq/hLrFEb6r6GgLb/oreyCDIIX\nKrPUJY8BC8PR+AisAwWxsrV1SGLq0bqfWiyYUvmrGsrCQd1ygPDfAoVt1XzPfu+2\nRjWZ/AY9v9MARjhS+5RsHg==\n-----END PRIVATE KEY-----\n",
+    "client_email": "firebase-adminsdk-71d6n@parkingtoeasy.iam.gserviceaccount.com",
+    "client_id": "100253678604098925499",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-71d6n%40parkingtoeasy.iam.gserviceaccount.com"
+  }
 }
