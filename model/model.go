@@ -18,7 +18,7 @@ type Credential struct {
 	Username	string		`gorm:"column:username" json:"username,omitempty"`
 	Password	string		`gorm:"column:password" json:"password,omitempty"`
 	Email		string		`gorm:"column:email" json:"email,omitempty"`
-	Points		int			`json:"points,omitempty"`
+	Points		int			`json:"points"`
 	Role		string		`gorm:"column:role" json:"role,omitempty"`
 	Token		string		`gorm:"column:token" json:"token,omitempty"`
 	Expired		string		`gorm:"column:expired" json:"expired,omitempty"`

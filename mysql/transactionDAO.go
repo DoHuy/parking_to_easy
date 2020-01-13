@@ -17,6 +17,7 @@ type TransactionDAO interface {
 	FindTransactionById(id int) (model.Transaction, error)
 	FindTheLastTransaction(credentialId int) (model.Transaction, error)
 	CountFinishedAndCanceledState(input model.AnalysisInput) (model.AnalysisOutput, error)
+	FindTransactionByCreatedAt(created string) (model.Transaction, error)
 }
 
 func (db *DAO)CalTotalAmountOfParking(id string) (int, error) {
@@ -152,4 +153,13 @@ func (db *DAO)CountFinishedAndCanceledState(input model.AnalysisInput) (model.An
 		}
 	}
 	return output, nil
+}
+
+func (db *DAO)FindTransactionByCreatedAt(created string) (model.Transaction, error){
+	var transaction model.Transaction
+	err := db.connection.Raw("SELECT* FROM transactions WHERE created_at=?", created).Scan(&transaction).Error
+	if err != nil {
+		return model.Transaction{}, err
+	}
+	return transaction, nil
 }
