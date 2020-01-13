@@ -51,6 +51,7 @@ func (self *ServiceFactory)	GetRatingService() *RatingService{
 func (self *ServiceFactory)GetTransactionService() *TransactionService{
 	return &TransactionService{
 		Dao		: self.Dao,
+		Redis	: self.Redis,
 	}
 }
 

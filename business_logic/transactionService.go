@@ -3,8 +3,10 @@ package business_logic
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/DoHuy/parking_to_easy/firebase"
 	"github.com/DoHuy/parking_to_easy/model"
 	"github.com/DoHuy/parking_to_easy/mysql"
+	"github.com/DoHuy/parking_to_easy/redis"
 	"github.com/DoHuy/parking_to_easy/utils"
 	"time"
 )
@@ -28,10 +30,12 @@ var STAGE = map[string]int{
 const BLOCK_TIME = '5' // block time fix cung
 type TransactionService struct {
 	Dao		*mysql.DAO
+	Redis	*redis.Redis
 }
-func NewService(dao *mysql.DAO) *TransactionService{
+func NewService(dao *mysql.DAO, redis *redis.Redis) *TransactionService{
 	return &TransactionService{
-		Dao: dao,
+		Dao: 	dao,
+		Redis:	redis,
 	}
 }
 
@@ -84,16 +88,12 @@ func (self *TransactionService)CustomTransaction(payload model.Payload, transact
 			return model.Transaction{}, err
 		}
 		transaction.Amount = int(session)*place.BlockAmount
-	//	fmt.Println("place:::", transaction.Amount)
-	//fmt.Println("place::: transaction::::", transaction.Session)
 		return transaction, nil
-
 }
 
 func (self *TransactionService)AddNewTicket(data interface{}) error{
 	var transaction model.Transaction
 	raw,_ := json.Marshal(data)
-	fmt.Println("DATAA::::", data)
 	err := json.Unmarshal(raw, &transaction)
 	var transactionIface mysql.TransactionDAO
 	transactionIface = self.Dao
@@ -101,6 +101,52 @@ func (self *TransactionService)AddNewTicket(data interface{}) error{
 	if err != nil {
 		return err
 	}
+	// lay lai id cua transaction vua tao
+	createdTransaction, err := transactionIface.FindTransactionByCreatedAt(transaction.CreatedAt)
+	// Tạo topic để send thông báo trong redis
+	// Lấy thông tin chủ bãi đỗ
+	var parkingIface mysql.ParkingDAO
+	parkingIface = self.Dao
+	parking, err := parkingIface.FindParkingByID(fmt.Sprintf("%d", transaction.ParkingId))
+	if err != nil {
+		return err
+	}
+	// lay list token cua khach va cua chu bai do
+	var deviceIface mysql.DeviceDAO
+	deviceIface = self.Dao
+	// lay danh sach token cua khach
+	userDevices, err := deviceIface.FindTokensOfUser(transaction.CredentialId)
+	if err != nil {
+		return err
+	}
+	// lay danh sach token cua chu bai do
+	ownerDevices, err := deviceIface.FindTokensOfUser(parking.OwnerId)
+	if err != nil {
+		return err
+	}
+	var ownerTokens []string
+	var userTokens 	[]string
+	for _, ownerDevice := range ownerDevices {
+		ownerTokens = append(ownerTokens, ownerDevice.DeviceToken)
+	}
+	for _, userDevice := range userDevices {
+		userTokens = append(userTokens, userDevice.DeviceToken)
+	}
+	// luu list token cua khach trong redis
+	err = self.Redis.SetTokenListTransactionTopic(createdTransaction.ID, createdTransaction.CredentialId, userTokens)
+	// luu list token cua chu bai do trong redis
+	err = self.Redis.SetTokenListTransactionTopic(createdTransaction.ID, parking.OwnerId, ownerTokens)
+	if err != nil {
+		return err
+	}
+	// ban thong bao cho chu bai do la co bai do vua dat
+	// khoi tao 1 instance cua firebase service
+	fireBaseService := firebase.NewFireBaseService(self.Redis)
+	err = fireBaseService.SendNotifyToUserOfTransaction(createdTransaction.ID, parking.OwnerId, "THÔNG BÁO", "Bạn vừa nhận được một lượt đăng ký đậu xe")
+	if err != nil {
+		return err
+	}
+	//
 	return nil
 }
 
@@ -146,6 +192,41 @@ func (self *TransactionService)NextStepTransaction(data interface{}) error{
 	if err != nil {
 		return err
 	}
+	// lấy thông tin của transaction
+	transaction, err := transactionIface.FindTransactionById(input.TransactionId)
+	if err != nil {
+		return err
+	}
+	// Lấy thông tin của chủ bãi xe
+	var parkingIface mysql.ParkingDAO
+	parkingIface = self.Dao
+	parking, err := parkingIface.FindParkingByID(fmt.Sprintf("%d", transaction.ParkingId))
+	if err != nil {
+		return err
+	}
+	// Lấy thông tin user
+	var credentialIface mysql.CredentialDAO
+	credentialIface = self.Dao
+	credential, err := credentialIface.FindCredentialByID(fmt.Sprintf("%d",transaction.CredentialId))
+	// bắn thông báo khi thay đổi trạng thái tương ứng
+	fireBaseService := firebase.NewFireBaseService(self.Redis)
+	if input.Status == 4 {
+		err = fireBaseService.SendNotifyToUserOfTransaction(transaction.ID, parking.OwnerId, "THÔNG BÁO", fmt.Sprintf("%s đã hủy đặt bãi %s", credential.Username, parking.ParkingName))
+		//self.Redis.DelUserTokenListInTransactionTopic(transaction.ID)
+	} else if input.Status == 2{
+		err = fireBaseService.SendNotifyToUserOfTransaction(transaction.ID, transaction.CredentialId, "THÔNG BÁO", fmt.Sprintf("Yêu cầu đặt bãi %s. đã thành công", parking.ParkingName))
+	} else if input.Status == 3{
+		err = fireBaseService.SendNotifyToUserOfTransaction(transaction.ID, parking.OwnerId, "THÔNG BÁO", fmt.Sprintf("%s đã vào bãi %s", credential.Username, parking.ParkingName))
+		err = fireBaseService.SendNotifyToUserOfTransaction(transaction.ID, transaction.CredentialId,"THÔNG BÁO", fmt.Sprintf("Xe của bạn đã vào bãi %s", parking.ParkingName))
+		//tru tien user
+
+		// Tao 1 goroutine check session
+
+		//
+	} else if input.Status == 5{
+		err = fireBaseService.SendNotifyToUserOfTransaction(transaction.ID, parking.OwnerId, "THÔNG BÁO", fmt.Sprintf("%s đã chủ động lấy xe tại bãi %s", credential.Username, parking.ParkingName))
+	}
+	//
 	return nil
 }
 
