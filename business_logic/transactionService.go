@@ -135,9 +135,8 @@ func (self *TransactionService)GetTransactionOfUserWithStatus(data interface{}) 
 
 func (self *TransactionService)NextStepTransaction(data interface{}) error{
 	var input model.ChangingStateTransactionInput
-	fmt.Println("before Data::::", data)
 	err := utils.BindRawStructToRespStruct(data, &input)
-	fmt.Println("After data::::", input)
+
 	if err != nil {
 		return err
 	}
@@ -193,9 +192,18 @@ func (self *TransactionService)CheckParkingOwnerOfTransaction(ownerId, parkingId
 	if parking.OwnerId == ownerId {
 		return true
 	}
-
 	return false
 
+}
+
+func (self *TransactionService)GetParkingIdFromTransaction(transactionId int) (int, error){
+	var transactionIface mysql.TransactionDAO
+	transactionIface = self.Dao
+	transaction, err := transactionIface.FindTransactionById(transactionId)
+	if err != nil {
+		return 0, err
+	}
+	return transaction.ParkingId, nil
 }
 
 // neu trang thai bang 2 thi tru tien cua user

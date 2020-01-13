@@ -84,6 +84,10 @@ type Rating struct {
 	CredentialId	int		`gorm:"column:credentialId" json:"credentialId,omitempty"`
 	ParkingId		int		`gorm:"column:parkingId" json:"parkingId,omitempty"`
 }
+type VotingInput struct {
+	TransactionId	int	`json:"transactionId"`
+	Stars			int	`json:"stars"`
+}
 
 
 type Payload struct {

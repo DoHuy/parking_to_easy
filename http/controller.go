@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/DoHuy/parking_to_easy/business_logic"
-	"github.com/DoHuy/parking_to_easy/business_logic/auth"
 	"github.com/DoHuy/parking_to_easy/config"
 	"github.com/DoHuy/parking_to_easy/model"
 	"github.com/DoHuy/parking_to_easy/mysql"
@@ -16,16 +15,14 @@ import (
 )
 
 type ControllingService struct {
-	DAO        	*mysql.DAO
-	Middleware 	*MiddleWareService
-	Auth		*auth.Auth
+	Factory		*business_logic.ServiceFactory
+	Middleware  *MiddleWareService
 }
 
-func NewControllingService(dao *mysql.DAO, middleware *MiddleWareService, auth *auth.Auth) *ControllingService {
+func NewControllingService(factory *business_logic.ServiceFactory, middleware  *MiddleWareService) *ControllingService {
 	return &ControllingService{
-		DAO:        dao,
+		Factory: factory,
 		Middleware: middleware,
-		Auth:		auth,
 	}
 }
 
@@ -54,7 +51,7 @@ func (con *ControllingService) CreateNewParkingByAdmin(c *gin.Context) {
 	}
 	// implement
 	var parkingDAOIface mysql.ParkingDAO
-	parkingDAOIface = con.DAO
+	parkingDAOIface = con.Factory.Dao
 	//fmt.Println("middle.Datamiddle.Data", middle.Data)
 	err := parkingDAOIface.CreateNewParkingByAdmin(middle.Data)
 	if err != nil {
@@ -78,7 +75,7 @@ func (con *ControllingService) CreateNewParkingByOwner(c *gin.Context) {
 	}
 	// implement
 	var parkingDAOIface mysql.ParkingDAO
-	parkingDAOIface = con.DAO
+	parkingDAOIface = con.Factory.Dao
 	err := parkingDAOIface.CreateNewParkingOfOwner(middle.Data)
 	if err != nil {
 		fmt.Println("ERRRRRR:::::::", err)
@@ -95,7 +92,7 @@ func (con *ControllingService) GetAllApprovedParkings(c *gin.Context) {
 	var err error
 	// implement
 	var parkingDAOIface mysql.ParkingDAO
-	parkingDAOIface = con.DAO
+	parkingDAOIface = con.Factory.Dao
 	parkings, err = parkingDAOIface.GetAllParking()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
@@ -133,7 +130,7 @@ func (con *ControllingService) GetAllParkingsOfOwner(c *gin.Context) {
 	raw, _ := json.Marshal(middle.Data)
 	// implement
 	var parkingDAOIface mysql.ParkingDAO
-	parkingDAOIface = con.DAO
+	parkingDAOIface = con.Factory.Dao
 	owner, err := parkingDAOIface.FindParkingByOwnerId(string(raw))
 	if err != nil {
 		if err.Error() == "record not found" {
@@ -159,7 +156,7 @@ func (con *ControllingService) ModifyParkingByOwner(c *gin.Context) {
 		return
 	}
 	var parkingIface mysql.ParkingDAO
-	parkingIface = con.DAO
+	parkingIface = con.Factory.Dao
 	err := parkingIface.ModifyParking(middle.Data)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message:"Hệ thống có sự cố"})
@@ -176,7 +173,7 @@ func (con *ControllingService) RemoveParkingOfOwner(c *gin.Context) {
 		return
 	}
 	var parkingIface mysql.ParkingDAO
-	parkingIface = con.DAO
+	parkingIface = con.Factory.Dao
 	err := parkingIface.DeleteParking(middle.Data)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message:"Hệ thống có sự cố"})
@@ -195,7 +192,7 @@ func (con *ControllingService)GetAllOwners(c *gin.Context) {
 		return
 	}
 	// implement
-	service := business_logic.NewOwnerService(con.DAO)
+	service := con.Factory.GetOwnerService()
 	owners, err := service.GetAllOwners(middle.Data)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
@@ -213,7 +210,7 @@ func (con *ControllingService) DisableOwner(c *gin.Context) {
 		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
 		return
 	}
-	service := business_logic.NewOwnerService(con.DAO)
+	service := con.Factory.GetOwnerService()
 	fmt.Println("middle:::", middle.Data)
 	err := service.DisableOwner(middle.Data)
 	if err != nil {
@@ -233,7 +230,7 @@ func (con *ControllingService) CreateNewTransaction(c *gin.Context) {
 		return
 	}
 	// call Transaction service
-	service := business_logic.NewService(con.DAO)
+	service := con.Factory.GetTransactionService()
 	err := service.AddNewTicket(middle.Data)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
@@ -253,7 +250,7 @@ func (con *ControllingService) GetTransactionOfUser(c *gin.Context) {
 		return
 	}
 	// init service transaction
-	service := business_logic.NewService(con.DAO)
+	service := con.Factory.GetTransactionService()
 	transactions, err := service.GetTransactionOfUserWithStatus(middle.Data)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
@@ -276,7 +273,7 @@ func (con *ControllingService) GetAllTransactionOfOwner(c *gin.Context){
 		return
 	}
 
-	service := business_logic.NewService(con.DAO)
+	service := con.Factory.GetTransactionService()
 	transactions, err := service.GetTransactionOfOwnerWithStatus(middle.Data)
 	if len(transactions) <= 0 {
 		c.JSON(http.StatusNotFound, model.ErrorMessage{Message: "Bạn không có yêu cầu nào"})
@@ -297,7 +294,7 @@ func (con *ControllingService) GetAllTransaction(c *gin.Context) {
 		return
 	}
 	var transactionIface mysql.TransactionDAO
-	transactionIface = con.DAO
+	transactionIface = con.Factory.Dao
 	transactions, err := transactionIface.FindAllTransaction()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
@@ -316,7 +313,7 @@ func (con *ControllingService) ChangeStateTransaction(c *gin.Context) {
 		return
 	}
 
-	service := business_logic.NewService(con.DAO)
+	service := con.Factory.GetTransactionService()
 	err := service.NextStepTransaction(middle.Data)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
@@ -332,7 +329,7 @@ func (con *ControllingService) RatingParking(c *gin.Context) {
 		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
 		return
 	}
-	service := business_logic.NewRatingService(con.DAO)
+	service := con.Factory.GetRatingService()
 	err := service.CreateVoteOfUser(middle.Data)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
@@ -381,7 +378,7 @@ func (con *ControllingService) UploadFiles(c *gin.Context) {
 func (con *ControllingService) FindParkingByID(c *gin.Context) {
 	parkingId := c.Param("parkingId")
 	var parkingDAOIface mysql.ParkingDAO
-	parkingDAOIface = con.DAO
+	parkingDAOIface = con.Factory.Dao
 	parking, err := parkingDAOIface.FindParkingByID(parkingId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{
@@ -399,7 +396,7 @@ func (con *ControllingService) GetAllParkings(c *gin.Context) {
 	//offset := c.Param("offset")
 	c.Header("Access-Control-Allow-Origin", "*")
 	var parkingDAOIface mysql.ParkingDAO
-	parkingDAOIface = con.DAO
+	parkingDAOIface = con.Factory.Dao
 	parkings, err := parkingDAOIface.GetAllParking()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{
@@ -430,7 +427,7 @@ func (con *ControllingService) Register(c *gin.Context) {
 	credential.Role = "customer"
 	//credential
 	var credenIface mysql.CredentialDAO
-	credenIface = con.DAO
+	credenIface = con.Factory.Dao
 	err = credenIface.CreateCredential(credential)
 	//fmt.Println("loi gi vay may: ", newCredential)
 	if err != nil {
@@ -456,8 +453,9 @@ func (con *ControllingService) Login(c *gin.Context) {
 	err := utils.BindRawStructToRespStruct(middle.Data, &credential)
 	//
 	var credIface mysql.CredentialDAO
-	credIface = con.DAO
-	token, err, rawError := con.Auth.Authenticate(credential, credIface)
+	credIface = con.Factory.Dao
+	service := con.Factory.GetAuthService()
+	token, err, rawError := service.Authenticate(credential, credIface)
 	if err != nil && rawError == nil {
 		c.JSON(http.StatusNotFound, model.ErrorMessage{Message: err.Error(),})
 		return
@@ -476,7 +474,7 @@ func (con *ControllingService) VerifyParking(c *gin.Context) {
 		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
 		return
 	}
-	service := business_logic.NewParkingService(con.DAO)
+	service := con.Factory.GetParkingService()
 	err := service.VerifyParking(middle.Data)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Không xac thực được parking này"})
@@ -497,7 +495,7 @@ func (con *ControllingService) GetOwnerById(c *gin.Context) {
 		return
 	}
 	var ownerIface mysql.OwnerDAO
-	ownerIface = con.DAO
+	ownerIface = con.Factory.Dao
 	owner, err := ownerIface.FindOwnerById(middle.Data)
 	if err != nil {
 		if err.Error() == "record not found" {
@@ -524,7 +522,7 @@ func (con *ControllingService) GetAllUsers(c *gin.Context) {
 	//
 	fmt.Println("test getalllll")
 	var credIface mysql.CredentialDAO
-	credIface = con.DAO
+	credIface = con.Factory.Dao
 	credentials, err := credIface.FindAllCredential(c.Param("limit"), c.Param("offset"))
 	fmt.Println("test getalllll22222222222")
 	if err != nil {
@@ -556,7 +554,7 @@ func (con *ControllingService) GetDetailUser(c *gin.Context) {
 	//
 	id, _ := json.Marshal(middle.Data)
 	var credIface mysql.CredentialDAO
-	credIface = con.DAO
+	credIface = con.Factory.Dao
 	credential, err := credIface.FindCredentialByID(string(id))
 	if err != nil {
 		if err.Error() == "record not found" {
@@ -580,7 +578,7 @@ func (con *ControllingService) CreateNewOwner(c *gin.Context) {
 		return
 	}
 	var ownerIface mysql.OwnerDAO
-	ownerIface = con.DAO
+	ownerIface = con.Factory.Dao
 	err := ownerIface.CreateNewOwner(middle.Data)
 	if err != nil {
 		if err.Error() == "Error 1062: Duplicate entry '76' for key 'PRIMARY'" {
@@ -602,7 +600,7 @@ func (con *ControllingService) CalculateAmountParking(c *gin.Context) {
 		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
 		return
 	}
-	service := business_logic.NewParkingService(con.DAO)
+	service := con.Factory.GetParkingService()
 	resp, err := service.CalculateAmountParkingAndVote(middle.Data.(string))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
@@ -620,7 +618,7 @@ func (con *ControllingService)SaveTokenFireBase(c *gin.Context) {
 		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
 		return
 	}
-	service := business_logic.NewDeviceService(con.DAO)
+	service := con.Factory.GetDeViceService()
 	if err := service.SaveDeviceTokenOfUser(middle.Data); err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
 		return
@@ -636,7 +634,7 @@ func (con *ControllingService)RemoveToken(c *gin.Context) {
 		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
 		return
 	}
-	service := business_logic.NewDeviceService(con.DAO)
+	service := con.Factory.GetDeViceService()
 	if err := service.RemoveDeviceTokenOfUser(middle.Data); err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
 		return

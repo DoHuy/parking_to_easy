@@ -4,6 +4,7 @@ import(
 	"fmt"
 	"github.com/DoHuy/parking_to_easy/model"
 	"github.com/gomodule/redigo/redis"
+	"strings"
 	"time"
 	"github.com/DoHuy/parking_to_easy/config"
 )
@@ -54,7 +55,7 @@ func (this *Redis)DelJWTToken(key string) error{
 	if err != nil {
 		return fmt.Errorf("Lỗi xóa dữ liệu trong redis", err)
 	}
-	fmt.Println("Co chay ao HDEL")
+	//fmt.Println("Co chay ao HDEL")
 	defer conn.Close()
 	return nil
 }
@@ -71,11 +72,13 @@ func (this *Redis)GetJWTTokenFromRedis(key string) (model.JWTOfUser, error){
 	return model.JWTOfUser{Key: key, Jwt: jwt}, nil
 }
 
-func (this *Redis)SetDevicesTokenToRedis(key string, tokenDevice string) error {
+// tao topic transactions
+func (this *Redis)SetTokenListTransactionTopic(transactionId int, userId int, tokens []string) error {
 	conn := this.pool.Get()
 	var redisConfig model.Redis
 	redisConfig = config.GetConfigRedis()
-	_, err := conn.Do("HMSET", redisConfig.Topic[1], key, tokenDevice)
+	topicName := fmt.Sprintf("%s.%s", redisConfig.Topic[1], transactionId)
+	_, err := conn.Do("HMSET", topicName, userId, strings.Join(tokens, " "))
 	if err != nil {
 		return fmt.Errorf("Lỗi thêm dữ liêu vào Redis", err)
 	}
@@ -83,9 +86,64 @@ func (this *Redis)SetDevicesTokenToRedis(key string, tokenDevice string) error {
 	return nil
 }
 
-func (this *Redis)GetAllTokenDevicesFromRedis(){
+func (this *Redis)GetTokenListTransactionTopic(transactionId, userId int) ([]string, error){
+	conn := this.pool.Get()
+	redisConfig := config.GetConfigRedis()
+	topicName := fmt.Sprintf("%s.%s", redisConfig.Topic[1], transactionId)
+	tokens, err := redis.String(conn.Do("HGET", topicName, userId))
+	if err != nil {
+		return []string{}, fmt.Errorf("Lỗi Redis", err.Error())
+	}
+	defer conn.Close()
+	return strings.Split(tokens, " "), nil
+}
 
+func (this *Redis)DelUserTokenListInTransactionTopic(transactionId int, userId int) error{
+	conn := this.pool.Get()
+	var redisConfig model.Redis
+	redisConfig = config.GetConfigRedis()
+	topicName := fmt.Sprintf("%s.%s", redisConfig.Topic[1], transactionId)
+	_, err := conn.Do("HDEL", topicName, userId)
+	if err != nil {
+		return fmt.Errorf("Lỗi xóa dữ liệu trong redis %s", err.Error())
+	}
+	return nil
+}
+
+func (this *Redis)SetTokenListParking(parkingId int, userId int, tokens []string) error{
+	conn := this.pool.Get()
+	var redisConfig model.Redis
+	redisConfig = config.GetConfigRedis()
+	topicName := fmt.Sprintf("%s.%s", redisConfig.Topic[2], parkingId)
+	_, err := conn.Do("HMSET", topicName, userId, strings.Join(tokens, " "))
+	if err != nil {
+		return fmt.Errorf("Lỗi thêm dữ liêu vào Redis", err)
+	}
+	defer conn.Close()
+	return nil
 }
 
 
+func (this *Redis)GetTokenListParking(parkingId, userId int) ([]string, error){
+	conn := this.pool.Get()
+	redisConfig := config.GetConfigRedis()
+	topicName := fmt.Sprintf("%s.%s", redisConfig.Topic[2], parkingId)
+	tokens, err := redis.String(conn.Do("HGET", topicName, userId))
+	if err != nil {
+		return []string{}, fmt.Errorf("Lỗi Redis", err.Error())
+	}
+	defer conn.Close()
+	return strings.Split(tokens, " "), nil
+}
 
+func (this *Redis)DelUserTokenListInParkingTopic(transactionId int, userId int) error{
+	conn := this.pool.Get()
+	var redisConfig model.Redis
+	redisConfig = config.GetConfigRedis()
+	topicName := fmt.Sprintf("%s.%s", redisConfig.Topic[1], transactionId)
+	_, err := conn.Do("HDEL", topicName, userId)
+	if err != nil {
+		return fmt.Errorf("Lỗi xóa dữ liệu trong redis %s", err.Error())
+	}
+	return nil
+}

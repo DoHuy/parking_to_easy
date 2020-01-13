@@ -26,21 +26,20 @@ import (
 )
 
 type MiddleWareService struct {
-	DAO		*mysql.DAO
-	Auth	*auth.Auth
+	Factory		*business_logic.ServiceFactory
 }
 // api Upload
-func NewMiddleware(dao *mysql.DAO, auth *auth.Auth) *MiddleWareService {
+func NewMiddleware(factory	*business_logic.ServiceFactory) *MiddleWareService {
 
 	return &MiddleWareService{
-		DAO: dao,
-		Auth: auth,
+		Factory: factory,
 	}
 }
 
 func (mid *MiddleWareService)BeforeUpload(c *gin.Context, token string) model.Middleware {
 	// check is True token,  expired token
-	checked, err := mid.Auth.CheckTokenIsTrue(token)
+	service := mid.Factory.GetAuthService()
+	checked, err := service.CheckTokenIsTrue(token)
 	if checked == false && err != nil {
 		return model.Middleware{StatusCode: 401, Message: err.Error()}
 	}
@@ -75,7 +74,7 @@ func (mid *MiddleWareService)BeforeRegister(c *gin.Context) model.Middleware {
 	//var rs model.Credential
 	fmt.Println(credential.Username, credential.Email)
 	var credIface mysql.CredentialDAO
-	credIface = mid.DAO
+	credIface = mid.Factory.Dao
 	rs, err := credIface.FindCredentialByName(credential.Username)
 	fmt.Println("ERRRRR", err)
 	//err = utils.BindRawStructToRespStruct(raw, &rs)
@@ -121,17 +120,18 @@ func (mid *MiddleWareService)BeforeGetAllUsers(c *gin.Context) model.Middleware 
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	service := mid.Factory.GetAuthService()
+	checked, _ := service.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := service.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
 	// check role
-	role, err,_ := mid.Auth.Authorize(token)
+	role, err,_ := service.Authorize(token)
 
 	//fmt.Print("role", role, err, rawerr)
 	if role != "admin" {
@@ -147,13 +147,14 @@ func (mid *MiddleWareService)BeforeGetDetailUser(c *gin.Context) model.Middlewar
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
+	service := mid.Factory.GetAuthService()
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	checked, _ := service.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := service.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
@@ -173,13 +174,14 @@ func (mid *MiddleWareService)BeforeCreateNewParkingByAdmin(c *gin.Context) model
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
+	service := mid.Factory.GetAuthService()
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	checked, _ := service.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := service.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
@@ -200,7 +202,7 @@ func (mid *MiddleWareService)BeforeCreateNewParkingByAdmin(c *gin.Context) model
 		fmt.Println("ERR:   ", err)
 		return model.Middleware{StatusCode: 500, Message: "Hệ thống có sự cố"}
 	}
-	role, err, _ := mid.Auth.Authorize(token)
+	role, err, _ := service.Authorize(token)
 	if err != nil {
 		return model.Middleware{StatusCode: 500, Message: "Hệ thống có sự cố"}
 	}
@@ -222,14 +224,15 @@ func (mid *MiddleWareService)BeforeCreateNewOwner(c *gin.Context) model.Middlewa
 		fmt.Println("ERR:   ", err)
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
+	service := mid.Factory.GetAuthService()
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	checked, _ := service.CheckTokenIsTrue(token)
 	if checked != true {
 		fmt.Println("ERR:   ", err)
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := service.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
@@ -263,13 +266,14 @@ func (mid *MiddleWareService)BeforeCreateNewParkingByOwner(c *gin.Context) model
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
+	service := mid.Factory.GetAuthService()
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	checked, _ := service.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := service.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
@@ -294,8 +298,8 @@ func (mid *MiddleWareService)BeforeCreateNewParkingByOwner(c *gin.Context) model
 	newParking.OwnerId = payload.UserId
 	newParking.CreatedAt = time.Now().Format(time.RFC3339)
 	newParking.Status	 = "PENDING"
-	service := business_logic.NewParkingService(mid.DAO)
-	checkedLocation := service.CheckExistedLocation(newParking.Longitude, newParking.Latitude)
+	parkingService := mid.Factory.GetParkingService()
+	checkedLocation := parkingService.CheckExistedLocation(newParking.Longitude, newParking.Latitude)
 	if checkedLocation == false {
 		return model.Middleware{StatusCode:400, Message: "Bạn đã chia sẻ vị trí này rồi"}
 	}
@@ -308,12 +312,13 @@ func (mid *MiddleWareService)BeforeGetOwnerById(c *gin.Context) model.Middleware
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	service := mid.Factory.GetAuthService()
+	checked, _ := service.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := service.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
@@ -321,7 +326,7 @@ func (mid *MiddleWareService)BeforeGetOwnerById(c *gin.Context) model.Middleware
 		return model.Middleware{StatusCode: 500, Message: "Hệ thống có sự cố"}
 	}
 	// check role
-	role, err,_ := mid.Auth.Authorize(token)
+	role, err,_ := service.Authorize(token)
 
 	//fmt.Print("role", role, err, rawerr)
 	if role != "admin" {
@@ -337,17 +342,18 @@ func (mid *MiddleWareService)BeforeVerifyParking(c *gin.Context) model.Middlewar
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	service := mid.Factory.GetAuthService()
+	checked, _ := service.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := service.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
 	// check role
-	role, err,_ := mid.Auth.Authorize(token)
+	role, err,_ := service.Authorize(token)
 	if role != "admin" {
 		return model.Middleware{StatusCode: 503, Message: "Hệ thống không hỗ trợ dịch vụ này"}
 	}
@@ -359,8 +365,8 @@ func (mid *MiddleWareService)BeforeVerifyParking(c *gin.Context) model.Middlewar
 	input.ID = id
 	input.ModifiedAt = time.Now().Format(time.RFC3339)
 	// kiem tra su ton tai cua parking
-	service := business_logic.NewParkingService(mid.DAO)
-	if checked := service.CheckExistedParking(id); checked != true{
+	parkingService := mid.Factory.GetParkingService()
+	if checked := parkingService.CheckExistedParking(id); checked != true{
 		return model.Middleware{StatusCode: 404, Message: "Bãi đỗ không tồn tại"}
 	}
 	if input.Status != "REJECTED" && input.Status != "APPROVED" {
@@ -388,12 +394,13 @@ func (mid *MiddleWareService)BeforeCalculateAmountParking(c *gin.Context) model.
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	authService := mid.Factory.GetAuthService()
+	checked, _ := authService.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := authService.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
@@ -401,7 +408,7 @@ func (mid *MiddleWareService)BeforeCalculateAmountParking(c *gin.Context) model.
 	idParking := c.Param("id")
 	var parking model.Parking
 	var parkingIface mysql.ParkingDAO
-	parkingIface = mid.DAO
+	parkingIface = mid.Factory.Dao
 	parking, err = parkingIface.FindParkingByID(idParking)
 	if err != nil {
 		if err.Error() == "record not found"{
@@ -431,16 +438,17 @@ func (mid *MiddleWareService)BeforeGetAllOwners(c *gin.Context) model.Middleware
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	authService := mid.Factory.GetAuthService()
+	checked, _ := authService.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := authService.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
-	role, err,_ := mid.Auth.Authorize(token)
+	role, err,_ := authService.Authorize(token)
 	if role != "admin" {
 		return model.Middleware{StatusCode: 503, Message: "Hệ thống không hỗ trợ dịch vụ này"}
 	}
@@ -453,16 +461,17 @@ func (mid *MiddleWareService)BeforeDisableOwner(c *gin.Context) model.Middleware
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	authService := mid.Factory.GetAuthService()
+	checked, _ := authService.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := authService.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
-	role, err,_ := mid.Auth.Authorize(token)
+	role, err,_ := authService.Authorize(token)
 	if role != "admin" {
 		return model.Middleware{StatusCode: 503, Message: "Hệ thống không hỗ trợ dịch vụ này"}
 	}
@@ -476,12 +485,13 @@ func (mid *MiddleWareService)BeforeModifyParkingByOwner(c *gin.Context) model.Mi
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	authService := mid.Factory.GetAuthService()
+	checked, _ := authService.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := authService.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
@@ -495,7 +505,7 @@ func (mid *MiddleWareService)BeforeModifyParkingByOwner(c *gin.Context) model.Mi
 	// check xem owner co so huu bai nay hay khong
 	var parking model.Parking
 	var parkingIface mysql.ParkingDAO
-	parkingIface = mid.DAO
+	parkingIface = mid.Factory.Dao
 	parking, err = parkingIface.FindParkingByID(c.Param("id"))
 	if err != nil {
 		if err.Error() == "record not found" {
@@ -527,12 +537,13 @@ func (mid *MiddleWareService)BeforeDeleteParkingByOwner(c *gin.Context) model.Mi
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	authService := mid.Factory.GetAuthService()
+	checked, _  := authService.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := authService.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
@@ -546,7 +557,7 @@ func (mid *MiddleWareService)BeforeDeleteParkingByOwner(c *gin.Context) model.Mi
 	// check xem owner co so huu bai nay hay khong
 	var parking model.Parking
 	var parkingIface mysql.ParkingDAO
-	parkingIface = mid.DAO
+	parkingIface = mid.Factory.Dao
 	parking, err = parkingIface.FindParkingByID(c.Param("id"))
 	if err != nil {
 		if err.Error() == "record not found" {
@@ -572,12 +583,13 @@ func (mid *MiddleWareService)BeforeCalculateAmountAndVote(c *gin.Context) model.
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	authService := mid.Factory.GetAuthService()
+	checked, _ := authService.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := authService.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
@@ -591,7 +603,7 @@ func (mid *MiddleWareService)BeforeCalculateAmountAndVote(c *gin.Context) model.
 	// check xem owner co so huu bai nay hay khong
 	var parking model.Parking
 	var parkingIface mysql.ParkingDAO
-	parkingIface = mid.DAO
+	parkingIface = mid.Factory.Dao
 	parking, err = parkingIface.FindParkingByID(c.Param("id"))
 	if err != nil {
 		if err.Error() == "record not found" {
@@ -611,12 +623,13 @@ func (mid *MiddleWareService)BeforeGetTransactionOfUser(c *gin.Context) model.Mi
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	authService := mid.Factory.GetAuthService()
+	checked, _ := authService.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := authService.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
@@ -639,12 +652,13 @@ func (mid *MiddleWareService)BeforeGetAllTransaction(c *gin.Context)model.Middle
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	authService := mid.Factory.GetAuthService()
+	checked, _ := authService.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := authService.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
@@ -668,12 +682,13 @@ func (mid *MiddleWareService)BeforeRating(c *gin.Context) model.Middleware{
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	authService := mid.Factory.GetAuthService()
+	checked, _ := authService.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := authService.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
@@ -687,8 +702,13 @@ func (mid *MiddleWareService)BeforeRating(c *gin.Context) model.Middleware{
 	}
 	rawBody := utils.GetBodyRequest(c)
 	var rating model.Rating
-	err = json.Unmarshal(rawBody, &rating)
+	var votingInput model.VotingInput
+	err = json.Unmarshal(rawBody, &votingInput)
+	tranService := mid.Factory.GetTransactionService()
+	parkingId, err := tranService.GetParkingIdFromTransaction(votingInput.TransactionId)
 	rating.CredentialId = payload.UserId
+	rating.Stars = votingInput.Stars
+	rating.ParkingId = parkingId
 	if err != nil {
 		return model.Middleware{StatusCode: 400, Message: "Hệ thống có sự cố"}
 	}
@@ -703,12 +723,13 @@ func (mid *MiddleWareService)BeforeRecommendParking(c *gin.Context) model.Middle
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	authService := mid.Factory.GetAuthService()
+	checked, _ := authService.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := authService.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
@@ -721,12 +742,13 @@ func (mid *MiddleWareService)BeforeCreateNewTransaction(c *gin.Context) model.Mi
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	authService := mid.Factory.GetAuthService()
+	checked, _ := authService.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := authService.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
@@ -738,15 +760,15 @@ func (mid *MiddleWareService)BeforeCreateNewTransaction(c *gin.Context) model.Mi
 	err = json.Unmarshal(raw, &payload)
 	rawBody := utils.GetBodyRequest(c)
 	err = json.Unmarshal(rawBody, &transaction)
-	service := business_logic.NewService(mid.DAO)
-	flag := service.CheckSelfBooking(transaction.ParkingId, payload.UserId)
+	tranService := mid.Factory.GetTransactionService()
+	flag := tranService.CheckSelfBooking(transaction.ParkingId, payload.UserId)
 	//fmt.Println("transaction ::: in middleware", converted)
 	fmt.Println("FLAG ::: ::: ::", flag)
 	if flag != true {
 		return model.Middleware{StatusCode: 403, Message: "Bạn không được tự đặt chỗ cho bãi của chính mình"}
 	}
-	converted, err := service.CustomTransaction(payload, transaction)
-	flagCheckTime := service.VerifyBookingStartTime(converted.CredentialId, converted.StartTime, converted.EndTime)
+	converted, err := tranService.CustomTransaction(payload, transaction)
+	flagCheckTime := tranService.VerifyBookingStartTime(converted.CredentialId, converted.StartTime, converted.EndTime)
 	if flagCheckTime != true {
 		return model.Middleware{StatusCode: 400, Message: "Ngày bắt đầu của session mới không được trước ngày kết thúc của session trc đó"}
 	}
@@ -759,12 +781,13 @@ func (mid *MiddleWareService)BeforeGetAllTransactionOfOwner(c *gin.Context) mode
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	authService := mid.Factory.GetAuthService()
+	checked, _ := authService.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := authService.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
@@ -782,8 +805,8 @@ func (mid *MiddleWareService)BeforeGetAllTransactionOfOwner(c *gin.Context) mode
 	// check bai do thuoc chu so huu
 	status,_ := strconv.Atoi(c.Param("status"))
 	parkingId,_ := strconv.Atoi(c.Param("parkingId"))
-	service := business_logic.NewService(mid.DAO)
-	if flag := service.CheckParkingOwnerOfTransaction(payload.UserId, parkingId); flag != true {
+	tranService := mid.Factory.GetTransactionService()
+	if flag := tranService.CheckParkingOwnerOfTransaction(payload.UserId, parkingId); flag != true {
 		return model.Middleware{StatusCode: 403, Message: "Bạn không có quyền truy cập tới bãi đỗ này"}
 	}
 	// convert data
@@ -796,12 +819,13 @@ func (mid *MiddleWareService)BeforeDeclineTransaction(c *gin.Context) model.Midd
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	authService := mid.Factory.GetAuthService()
+	checked, _ := authService.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := authService.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
@@ -821,12 +845,13 @@ func (mid *MiddleWareService)BeforeChangeStateTransaction(c *gin.Context) model.
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	authService := mid.Factory.GetAuthService()
+	checked, _ := authService.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := authService.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}
@@ -843,13 +868,13 @@ func (mid *MiddleWareService)BeforeChangeStateTransaction(c *gin.Context) model.
 	err = json.Unmarshal(rawBody, &input)
 	input.CredentialId = payload.UserId
 	// check xem co phai chu cua bai, hay la khach book
-	service := business_logic.NewService(mid.DAO)
-	flag := service.CheckPermissionForTransaction(input.TransactionId, input.CredentialId)
+	tranService := mid.Factory.GetTransactionService()
+	flag := tranService.CheckPermissionForTransaction(input.TransactionId, input.CredentialId)
 	if flag != true {
 		return model.Middleware{StatusCode: 403, Message:"Không có quyền thao tác với giao dịch này"}
 	}
 	// check changing status
-	flag = service.CheckRuleStateTransaction(input.TransactionId, input.Status)
+	flag = tranService.CheckRuleStateTransaction(input.TransactionId, input.Status)
 	if flag == false {
 		return model.Middleware{StatusCode:400, Message: "Cập nhật trạng thái khống đúng luật"}
 	}
@@ -862,12 +887,13 @@ func (mid *MiddleWareService)BeforeCreateAndRemoveDeviceToken(c *gin.Context) mo
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check format token
-	checked, _ := mid.Auth.CheckTokenIsTrue(token)
+	authService := mid.Factory.GetAuthService()
+	checked, _ := authService.CheckTokenIsTrue(token)
 	if checked != true {
 		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
 	}
 	// check expired token
-	checkedExpired, _, _ := mid.Auth.CheckExpiredToken(token)
+	checkedExpired, _, _ := authService.CheckExpiredToken(token)
 	if checkedExpired == true {
 		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
 	}

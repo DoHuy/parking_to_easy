@@ -6,14 +6,14 @@
     "address": "localhost:8881"
   },
   "secret_key": "abcdef123456789",
-  "max_uploaded_file_size":  1000000,
+  "max_uploaded_file_size":  10000000,
   "environment": {
     "hostname": "10.124.0.32",
     "port": "8085"
   },
   "redis": {
     "address": "localhost:8882",
-    "topic": ["JWT", "DEVICES"],
+    "topic": ["JWT", "TRANSACTION", "PARKING"],
     "networks": "tcp"
   },
   "token_expired": 10000,
