@@ -3,6 +3,7 @@ package mysql
 import (
 	"fmt"
 	"github.com/DoHuy/parking_to_easy/model"
+	"time"
 )
 
 type TransactionDAO interface {
@@ -15,6 +16,7 @@ type TransactionDAO interface {
 	ModifyTransaction(transactionId, status int) error
 	FindTransactionById(id int) (model.Transaction, error)
 	FindTheLastTransaction(credentialId int) (model.Transaction, error)
+	CountFinishedAndCanceledState(input model.AnalysisInput) (model.AnalysisOutput, error)
 }
 
 func (db *DAO)CalTotalAmountOfParking(id string) (int, error) {
@@ -118,4 +120,36 @@ func (db *DAO)FindTheLastTransaction(credentialId int) (model.Transaction, error
 		return model.Transaction{}, err
 	}
 	return transaction, nil
+}
+
+func (db *DAO)CountFinishedAndCanceledState(input model.AnalysisInput) (model.AnalysisOutput, error) {
+		var finishedTransactions []model.Transaction
+		var canceledTransactions []model.Transaction
+		var output model.AnalysisOutput
+
+		err := db.connection.Raw(`
+			SELECT * FROM transactions WHERE status=4`).Scan(&canceledTransactions).Error
+		err = db.connection.Raw(`
+			SELECT * FROM transactions WHERE status=5`).Scan(&finishedTransactions).Error
+		if err != nil {
+			return model.AnalysisOutput{}, err
+		}
+		//fmt.Println("finishedTransactions", start.Unix())
+		//fmt.Println("canceledTransactions", end.Unix())
+		// count cancel
+		for i:=0; i<len(canceledTransactions); i++ {
+			created, _ := time.Parse(time.RFC3339, canceledTransactions[i].CreatedAt)
+			fmt.Println("created::::::::", created.Unix())
+			if input.Start >= created.Unix() && created.Unix()<=input.End{
+				output.Canceled++
+			}
+		}
+		// count finished
+	for i:=0; i<len(finishedTransactions); i++ {
+		created, _ := time.Parse(time.RFC3339, finishedTransactions[i].CreatedAt)
+		if input.Start>=created.Unix() && created.Unix()<=input.End{
+			output.Finished++
+		}
+	}
+	return output, nil
 }

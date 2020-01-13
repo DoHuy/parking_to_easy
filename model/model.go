@@ -54,9 +54,9 @@ type Parking struct {
 	OwnerId				int			`gorm:"column:ownerId" json:"ownerId,omitempty"`
 	CertificateOfLand	string		`gorm:"column:certificateOfland" json:"certificateOfland"`
 	CreatedAt			string		`gorm:"column:created_at" json:"created_at,omitempty"`
-	ModifiedAt 			string		`gorm:"column:modified_at" json:"modified_at,omitempty"`
+	ModifiedAt 			string		`gorm:"column:modified_at" json:"modified_at"`
 	DeletedAt 			string		`gorm:"column:deleted_at" json:"deleted_at,omitempty"`
-	Describe			string		`gorm:"column:describe" json:"describe,omitempty"`
+	Describe			string		`gorm:"column:describe" json:"describe"`
 	Status				string		`gorm:"column:status" json:"status,omitempty"`
 }
 

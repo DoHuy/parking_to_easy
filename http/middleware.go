@@ -213,7 +213,6 @@ func (mid *MiddleWareService)BeforeCreateNewParkingByAdmin(c *gin.Context) model
 	newParking.Status = "APPROVED"
 	newParking.CreatedAt = time.Now().Format(time.RFC3339)
 	newParking.OwnerId = payload.UserId
-	newParking.BlockAmount,_ = strconv.Atoi(newParking.BlockAmount.(string))
 	return model.Middleware{Data: newParking}
 
 }
@@ -906,4 +905,32 @@ func (mid *MiddleWareService)BeforeCreateAndRemoveDeviceToken(c *gin.Context) mo
 	err = json.Unmarshal(raw, &payload)
 	input.CredentialId = payload.UserId
 	return model.Middleware{Data: input}
+}
+
+func (mid *MiddleWareService)BeforeAnalysisTransaction(c *gin.Context) model.Middleware{
+	token, err := utils.GetTokenFromHeader(c)
+	if err != nil {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check format token
+	authService := mid.Factory.GetAuthService()
+	checked, _ := authService.CheckTokenIsTrue(token)
+	if checked != true {
+		return model.Middleware{StatusCode: 400, Message: "Token không khả dụng"}
+	}
+	// check expired token
+	checkedExpired, _, _ := authService.CheckExpiredToken(token)
+	if checkedExpired == true {
+		return model.Middleware{StatusCode: 400, Message: "Token hết hạn sử dụng"}
+	}
+	var payload model.Payload
+	secretKey  := string(config.GetSecretKey())
+	raw, _ := auth.Decode(token, secretKey)
+	err = json.Unmarshal(raw, &payload)
+	if payload.Role != "admin" {
+		return model.Middleware{StatusCode: 503, Message: "Dịch vụ không được hỗ trợ"}
+	}
+	start, err := strconv.Atoi(c.Param("start"))
+	end, err := strconv.Atoi(c.Param("end"))
+	return model.Middleware{Data: model.AnalysisInput{Start: int64(start), End: int64(end)}}
 }

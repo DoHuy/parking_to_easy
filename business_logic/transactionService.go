@@ -206,6 +206,20 @@ func (self *TransactionService)GetParkingIdFromTransaction(transactionId int) (i
 	return transaction.ParkingId, nil
 }
 
+func (self *TransactionService)AnalysisTransaction(data interface{})(model.AnalysisOutput, error){
+	var transactionIface mysql.TransactionDAO
+	transactionIface = self.Dao
+	var input model.AnalysisInput
+	err := utils.BindRawStructToRespStruct(data, &input)
+	if err != nil {
+		return model.AnalysisOutput{}, err
+	}
+	output, err := transactionIface.CountFinishedAndCanceledState(input)
+	if err != nil {
+		return model.AnalysisOutput{}, err
+	}
+	return output, nil
+}
 // neu trang thai bang 2 thi tru tien cua user
 func (self *TransactionService)ExecTransactionBusinesses(status int) error{
 	return nil

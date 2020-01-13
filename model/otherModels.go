@@ -81,7 +81,7 @@ type NewParkingByAdmin struct {
 	Longitude			string		`json:"longitude,omitempty"`
 	Latitude			string		`json:"latitude,omitempty"`
 	Capacity			string		`json:"capacity,omitempty"`
-	BlockAmount			interface{}	`json:"blockAmount,omitempty"`
+	BlockAmount			int			`json:"blockAmount,omitempty"`
 	CertificateOfLand	string		`json:"certificateOfland,omitempty"`
 	Describe			string		`json:"describe,omitempty"`
 	Status				string		`json:"status,omitempty"`
@@ -160,4 +160,14 @@ type TransactionTopicInput struct {
 	OwnerId			int			`json:"ownerId"`
 	OwnerTokensList []string	`json:"ownerTokensList"`
 	UserTokensList  []string	`json:"UserTokensList"`
+}
+
+type AnalysisInput struct {
+	Start	int64	`json:"start"`
+	End		int64	`json:"end"`
+}
+
+type AnalysisOutput struct {
+	Finished 	 int	`json:"finished"`
+	Canceled	 int	`json:"canceled"`
 }

@@ -642,3 +642,23 @@ func (con *ControllingService)RemoveToken(c *gin.Context) {
 	c.JSON(http.StatusOK, model.SuccessMessage{Message: "Xóa token thành công"})
 	return
 }
+
+func (con *ControllingService)AnalysisTransaction(c *gin.Context) {
+	var middle model.Middleware
+	middle = con.Middleware.BeforeAnalysisTransaction(c)
+	if middle.StatusCode != 0{
+		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
+		return
+	}
+	transactionService := con.Factory.GetTransactionService()
+	resp, err := transactionService.AnalysisTransaction(middle.Data)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})
+		return
+	}
+
+	c.JSON(http.StatusOK, resp)
+	return
+
+
+}

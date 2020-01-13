@@ -56,11 +56,11 @@ func (service *RouteService)Init() {
 	service.Router.POST("/api/files/upload", service.Controller.UploadFiles) // done
 	/// rating
 	service.Router.POST("/api/rating/parking", service.Controller.RatingParking)// done
-	//service.Router.GET("/analysis/metric/all/parkings/:start/to/:end", con.AnalysisAllParkings) //
+	service.Router.GET("/analysis/metric/all/transactions/:start/to/:end", service.Controller.AnalysisTransaction)//
 
 	// token fire base
-	service.Router.POST("/api/save/token/firebase", service.Controller.SaveTokenFireBase)
-	service.Router.DELETE("/api/remove/token/firebase", service.Controller.RemoveToken)
+	service.Router.POST("/api/save/token/firebase", service.Controller.SaveTokenFireBase)// chua tét
+	service.Router.DELETE("/api/remove/token/firebase", service.Controller.RemoveToken)// chua tét
 	//
 	return
 }
