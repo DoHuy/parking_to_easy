@@ -92,7 +92,6 @@ func (db *DAO)FindAllTransactionOfOwner(parkingId, status int)([]model.GettingTr
 	if err != nil {
 		return []model.GettingTransactionDetailResp{}, err
 	}
-	fmt.Println("OUTPUSADADSAD:::", output)
 	return output, nil
 }
 
@@ -138,14 +137,19 @@ func (db *DAO)CountFinishedAndCanceledState(input model.AnalysisInput) (model.An
 		//fmt.Println("finishedTransactions", start.Unix())
 		//fmt.Println("canceledTransactions", end.Unix())
 		// count cancel
+		fmt.Println("CanceledTransactions::::::: :::::", canceledTransactions)
+		fmt.Println("startTransactions::::::: :::::", finishedTransactions)
 		for i:=0; i<len(canceledTransactions); i++ {
 			created, _ := time.Parse(time.RFC3339, canceledTransactions[i].CreatedAt)
 			fmt.Println("created::::::::", created.Unix())
+			fmt.Println("input.Start/1000", input.Start)
+			fmt.Println("input.End/1000", input.End)
 			if input.Start >= created.Unix() && created.Unix()<=input.End{
 				output.Canceled++
 			}
 		}
 		// count finished
+
 	for i:=0; i<len(finishedTransactions); i++ {
 		created, _ := time.Parse(time.RFC3339, finishedTransactions[i].CreatedAt)
 		if input.Start>=created.Unix() && created.Unix()<=input.End{

@@ -84,3 +84,6 @@ func (self *ParkingService)CheckExistedLocation(longitude, latitude string) bool
 	return true
 }
 
+//func (self *ParkingService)RecommendSuitableParking(location model.Location) ([]model.Parking, error){
+//
+//}

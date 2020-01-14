@@ -213,6 +213,7 @@ func (mid *MiddleWareService)BeforeCreateNewParkingByAdmin(c *gin.Context) model
 	newParking.Status = "APPROVED"
 	newParking.CreatedAt = time.Now().Format(time.RFC3339)
 	newParking.OwnerId = payload.UserId
+
 	return model.Middleware{Data: newParking}
 
 }

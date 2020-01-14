@@ -32,7 +32,7 @@ func (this *CustomerService)CheckWallet(amount int, credentialId int) bool {
 	var credentialIface mysql.CredentialDAO
 	credentialIface = this.Dao
 	credential, _ = credentialIface.FindCredentialByID(fmt.Sprintf("%d", credentialId))
-	if credential.Points >= amount {
+	if credential.Points >= amount/1000 {
 		return  true
 	}
 	return false

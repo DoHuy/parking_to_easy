@@ -34,7 +34,7 @@ type Owner struct {
 	Address				string		`gorm:"column:address" json:"address,omitempty"`
 	CMNDImage			string		`gorm:"column:cmndImage" json:"cmndImage,omitempty"`
 	Status				string		`gorm:"column:status" json:"status,omitempty"`
-	Parkings			[]Parking	`json:"parkings, omitempty"`
+	Parkings			[]Parking	`json:"parkings,omitempty"`
 	CreatedAt			string		`gorm:"column:created_at" json:"created_at,omitempty"`
 	ModifiedAt			string		`gorm:"column:modified_at" json:"modified_at,omitempty"`
 }

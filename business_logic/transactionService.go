@@ -213,6 +213,7 @@ func (self *TransactionService)NextStepTransaction(data interface{}) error{
 	// bắn thông báo khi thay đổi trạng thái tương ứng
 	if input.Status == 4 {
 		err = self.FireBase.SendNotifyToUserOfTransaction(transaction.ID, parking.OwnerId, "THÔNG BÁO", fmt.Sprintf("%s đã hủy đặt bãi %s", credential.Username, parking.ParkingName))
+		err = self.FireBase.SendNotifyToUserOfTransaction(transaction.ID, transaction.CredentialId, "THÔNG BÁO", fmt.Sprintf("%s Xin lỗi, điểm đậu tại %s đẫ hết", credential.Username, parking.ParkingName))
 		err = self.Redis.DeleteTransactionTopic(transaction.ID)
 		if err != nil {
 			return err
@@ -229,8 +230,27 @@ func (self *TransactionService)NextStepTransaction(data interface{}) error{
 	} else if input.Status == 3{
 		err = self.FireBase.SendNotifyToUserOfTransaction(transaction.ID, parking.OwnerId, "THÔNG BÁO", fmt.Sprintf("%s đã vào bãi %s", credential.Username, parking.ParkingName))
 		err = self.FireBase.SendNotifyToUserOfTransaction(transaction.ID, transaction.CredentialId,"THÔNG BÁO", fmt.Sprintf("Xe của bạn đã vào bãi %s", parking.ParkingName))
-		// Tao 1 goroutine check session
-
+		// run async
+		// ban time trc 20% cua time
+		waitTime:=time.Duration(2)*time.Minute
+		beforeTime := time.Duration(1)*time.Minute
+		fmt.Println("waitTime::::", waitTime)
+		fmt.Println("beforeTime::::", beforeTime, waitTime*time.Minute)
+		time.AfterFunc(beforeTime, func() {
+			// cap nhat  status sang ket thuc
+			// gui thông báo
+			err = self.FireBase.SendNotifyToUserOfTransaction(transaction.ID, credential.ID, "THÔNG BÁO", fmt.Sprintf("%s Còn %.2f phút là hết thời gian gửi xe tại bãi %s", credential.Username, time.Duration(waitTime-beforeTime).Minutes(), parking.ParkingName))
+			//err = self.FireBase.SendNotifyToUserOfTransaction(transaction.ID, parking.OwnerId, "THÔNG BÁO", fmt.Sprintf("%s hết thời gian gửi tại %s", credential.Username, parking.ParkingName))
+		})
+		//waititime := time.Duration(transaction.Session)
+		// fix cung wait time de test
+		time.AfterFunc(waitTime, func() {
+			// cap nhat  status sang ket thuc
+			err = transactionIface.ModifyTransaction(transaction.ID, 5)
+			// gui thông báo
+			err = self.FireBase.SendNotifyToUserOfTransaction(transaction.ID, credential.ID, "THÔNG BÁO", fmt.Sprintf("%s hết thời gian gửi tại %s", credential.Username, parking.ParkingName))
+			err = self.FireBase.SendNotifyToUserOfTransaction(transaction.ID, parking.OwnerId, "THÔNG BÁO", fmt.Sprintf("%s hết thời gian gửi tại %s", credential.Username, parking.ParkingName))
+		})
 		//
 	} else if input.Status == 5{
 		err = self.FireBase.SendNotifyToUserOfTransaction(transaction.ID, parking.OwnerId, "THÔNG BÁO", fmt.Sprintf("%s đã chủ động lấy xe tại bãi %s", credential.Username, parking.ParkingName))
@@ -240,10 +260,11 @@ func (self *TransactionService)NextStepTransaction(data interface{}) error{
 		}
 		// add point to owner
 		ownerService := NewOwnerService(self.Dao, self.Redis)
-		if err := ownerService.AddPoints(parking.OwnerId, transaction.Amount); err != nil {
+		if err := ownerService.AddPoints(parking.OwnerId, transaction.Amount/1000); err != nil {
 			return err
 		}
 		//
+
 	}
 	//
 	return nil
@@ -317,7 +338,9 @@ func (self *TransactionService)AnalysisTransaction(data interface{})([]model.Ana
 	// block a month
 	duration, _	:= time.ParseDuration("720h")
 	aMonth  	:= duration.Milliseconds()
+	fmt.Println("aMonth:::: :::", aMonth)
 	allMonth 	:= (input.End - input.Start)/aMonth
+	fmt.Println("alllMonth:::: :::", allMonth)
 	var results []model.AnalysisOutput
 	var month int64
 	var startMonth int64

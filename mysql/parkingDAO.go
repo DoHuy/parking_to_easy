@@ -33,7 +33,8 @@ func (db *DAO) CreateNewParkingOfOwner(newParking model.Parking)  error{
 }
 
 func (db *DAO) CreateNewParkingByAdmin(newParking interface{}) error {
-	var parking model.Parking
+	//var parking model.Parking
+	var parking model.NewParkingByAdmin
 	raw,_ := json.Marshal(newParking)
 	err := json.Unmarshal(raw, &parking)
 	fmt.Println("Parking::::: ", parking)

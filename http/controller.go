@@ -146,6 +146,7 @@ func (con *ControllingService) GetAllParkingsOfOwner(c *gin.Context) {
 
 func (con *ControllingService) RecommendParking(c *gin.Context) {
 
+
 }
 func (con *ControllingService) ModifyParkingByOwner(c *gin.Context) {
 	var middle model.Middleware
@@ -658,6 +659,4 @@ func (con *ControllingService)AnalysisTransaction(c *gin.Context) {
 
 	c.JSON(http.StatusOK, resp)
 	return
-
-
 }

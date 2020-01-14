@@ -81,7 +81,7 @@ type NewParkingByAdmin struct {
 	Longitude			string		`json:"longitude,omitempty"`
 	Latitude			string		`json:"latitude,omitempty"`
 	Capacity			string		`json:"capacity,omitempty"`
-	BlockAmount			int			`json:"blockAmount,omitempty"`
+	BlockAmount			string			`json:"blockAmount,omitempty"`
 	CertificateOfLand	string		`json:"certificateOfland,omitempty"`
 	Describe			string		`json:"describe,omitempty"`
 	Status				string		`json:"status,omitempty"`
@@ -170,4 +170,10 @@ type AnalysisInput struct {
 type AnalysisOutput struct {
 	Finished 	 int	`json:"finished"`
 	Canceled	 int	`json:"canceled"`
+}
+
+type Location struct {
+	Long	string	`json:"long"`
+	Lat		string	`json:"lat"`
+	Radius	string	`json:"radius"`
 }
