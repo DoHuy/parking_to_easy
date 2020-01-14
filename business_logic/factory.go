@@ -24,39 +24,30 @@ func NewFactory() (*ServiceFactory, error){
 }
 
 func (self *ServiceFactory)GetDeViceService() *DeviceService{
-	return &DeviceService{
-		Dao		: self.Dao,
-		Redis	: self.Redis,
-	}
+	return NewDeviceService(self.Dao, self.Redis)
 }
 
 func (self *ServiceFactory)GetOwnerService() *OwnerService{
-	return &OwnerService{
-		Dao		: self.Dao,
-	}
+	return NewOwnerService(self.Dao, self.Redis)
 }
 
 func (self *ServiceFactory)GetParkingService() *ParkingService{
-	return &ParkingService{
-		Dao		: self.Dao,
-	}
+	return NewParkingService(self.Dao, self.Redis)
+
 }
 
 func (self *ServiceFactory)	GetRatingService() *RatingService{
-	return &RatingService{
-		Dao		: self.Dao,
-	}
+	return NewRatingService(self.Dao)
 }
 
 func (self *ServiceFactory)GetTransactionService() *TransactionService{
-	return &TransactionService{
-		Dao		: self.Dao,
-		Redis	: self.Redis,
-	}
+	return NewService(self.Dao, self.Redis)
 }
 
 func (self *ServiceFactory)GetAuthService() *auth.Auth{
-	return &auth.Auth{
-		Redis: self.Redis,
-	}
+	return auth.NewAuth(self.Redis)
+}
+
+func (self *ServiceFactory)GetCustomerService() *CustomerService{
+	return NewCustomerService(self.Dao)
 }

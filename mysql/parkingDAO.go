@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/DoHuy/parking_to_easy/model"
+	"github.com/DoHuy/parking_to_easy/utils"
 )
 
 type ParkingDAO interface {
-	CreateNewParkingOfOwner(newParking interface{})  error
+	CreateNewParkingOfOwner(newParking model.Parking)  error
 	CreateNewParkingByAdmin(newParking interface{}) error
 	ChangStatusParking(input model.VerifyingParkingInput)  error
 	FindParkingByID(id string) (model.Parking, error)
@@ -16,16 +17,12 @@ type ParkingDAO interface {
 	ModifyParking(data interface{}) error
 	DeleteParking(data interface{}) error
 	FindParkingByLongLat(longitude, latitude string)([]model.Transaction, error)
+	FindParkingByCreatedAt(created string)(model.Parking, error)
 }
 
-func (db *DAO) CreateNewParkingOfOwner(newParking interface{})  error{
+func (db *DAO) CreateNewParkingOfOwner(newParking model.Parking)  error{
 	var parking model.Parking
-	raw,_ := json.Marshal(newParking)
-	err := json.Unmarshal(raw, &parking)
-	fmt.Println("PARKING:::", parking)
-	if err != nil {
-		return err
-	}
+	err := utils.BindRawStructToRespStruct(newParking, &parking)
 	err = db.connection.Table("parkings").Create(&parking).Error
 	if err != nil {
 		fmt.Println("ERR in mysql:::", err)
@@ -143,4 +140,13 @@ func (db *DAO)FindParkingByLongLat(longitude, latitude string)([]model.Transacti
 		return []model.Transaction{}, err
 	}
 	return transactions, nil
+}
+
+func (db *DAO)FindParkingByCreatedAt(created string)(model.Parking, error){
+	var parking model.Parking
+	err := db.connection.Raw("SELECT* FROM parkings WHERE created_at=?", created).Scan(&parking).Error
+	if err != nil {
+		return model.Parking{}, err
+	}
+	return parking, nil
 }

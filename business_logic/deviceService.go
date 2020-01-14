@@ -12,12 +12,10 @@ type DeviceService struct {
 	Redis	*redis.Redis
 }
 
-func NewDeviceService(dao *mysql.DAO) *DeviceService{
-	var redisPool *redis.Redis
-	redisPool = redis.NewRedis()
+func NewDeviceService(dao *mysql.DAO, redis *redis.Redis) *DeviceService{
 	return &DeviceService{
 		Dao:dao,
-		Redis:redisPool,
+		Redis:redis,
 	}
 }
 

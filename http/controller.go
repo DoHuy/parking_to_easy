@@ -74,9 +74,8 @@ func (con *ControllingService) CreateNewParkingByOwner(c *gin.Context) {
 		return
 	}
 	// implement
-	var parkingDAOIface mysql.ParkingDAO
-	parkingDAOIface = con.Factory.Dao
-	err := parkingDAOIface.CreateNewParkingOfOwner(middle.Data)
+	ownerService := con.Factory.GetOwnerService()
+	err := ownerService.ShareParking(middle.Data)
 	if err != nil {
 		fmt.Println("ERRRRRR:::::::", err)
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{Message: "Hệ thống có sự cố"})

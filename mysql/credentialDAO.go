@@ -12,6 +12,7 @@ type CredentialDAO interface {
 	FindCredentialByNameAndPassword(name , pwd string) (model.Credential, error)
 	FindAllCredential(limit, offset string) ([]model.Credential, error)
 	CreateCredential(newUser model.Credential) error
+	ModifyCredential(operator string, points int, credentialId int) error
 }
 
 func (db *DAO)FindCredentialByName(username string) (model.Credential, error){
@@ -74,3 +75,22 @@ func (db *DAO) CreateCredential(newUser model.Credential) error {
 	return nil
 }
 
+func (db *DAO)ModifyCredential(operator string, points int, credentialId int) error{
+	var credential model.Credential
+	err := db.connection.Raw("SELECT* FROM credentials WHERE id=?", credentialId).Scan(&credential).Error
+	if operator == "SUB" {
+		err := db.connection.Exec("UPDATE credentials SET points=? WHERE id=?", credential.Points - points, credentialId).Error
+		if err != nil {
+			return err
+		}
+	} else {
+		//var owner model.Credential
+		//err := db.connection.Raw("SELECT* FROM credentials WHERE id=?", credentialId).Scan(&owner).Error
+		err  = db.connection.Exec("UPDATE credentials SET points=? WHERE id=?", credential.Points + points, credentialId).Error
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

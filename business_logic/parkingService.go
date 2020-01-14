@@ -2,18 +2,25 @@ package business_logic
 
 import (
 	"fmt"
+	"github.com/DoHuy/parking_to_easy/firebase"
 	"github.com/DoHuy/parking_to_easy/model"
 	"github.com/DoHuy/parking_to_easy/mysql"
+	"github.com/DoHuy/parking_to_easy/redis"
 	"github.com/DoHuy/parking_to_easy/utils"
 )
 
 type ParkingService struct {
-	Dao *mysql.DAO
+	Dao 		*mysql.DAO
+	Redis 		*redis.Redis
+	FireBase	*firebase.FireBaseService
 }
 
-func NewParkingService(dao *mysql.DAO) *ParkingService{
+func NewParkingService(dao *mysql.DAO, redis *redis.Redis) *ParkingService{
+	firebaseService := firebase.NewFireBaseService(redis)
 	return &ParkingService{
 		Dao: dao,
+		Redis: redis,
+		FireBase: firebaseService,
 	}
 }
 
@@ -44,6 +51,15 @@ func (self *ParkingService)VerifyParking(updatedData interface{}) error {
 	if err := parkingIface.ChangStatusParking(input); err != nil {
 		return err
 	}
+	// gửi thông báo về phía owner thông báo đã được admin approve
+	var parking model.Parking
+	parking, err = parkingIface.FindParkingByID(input.ID)
+	err = self.FireBase.SendNotifyToUserOfParking(parking.ID, parking.OwnerId, "THÔNG BÁO", fmt.Sprintf("Điểm đậu xe %s đã được phê duyệt", parking.ParkingName))
+	// remove parking topic in redis
+	err = self.Redis.DeleteParkingTopic(parking.ID)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -67,3 +83,4 @@ func (self *ParkingService)CheckExistedLocation(longitude, latitude string) bool
 	}
 	return true
 }
+

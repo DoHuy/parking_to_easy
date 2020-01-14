@@ -29,13 +29,16 @@ var STAGE = map[string]int{
 
 const BLOCK_TIME = '5' // block time fix cung
 type TransactionService struct {
-	Dao		*mysql.DAO
-	Redis	*redis.Redis
+	Dao			*mysql.DAO
+	Redis		*redis.Redis
+	FireBase	*firebase.FireBaseService
 }
 func NewService(dao *mysql.DAO, redis *redis.Redis) *TransactionService{
+	firebaseService := firebase.NewFireBaseService(redis)
 	return &TransactionService{
 		Dao: 	dao,
 		Redis:	redis,
+		FireBase: firebaseService,
 	}
 }
 
@@ -141,8 +144,7 @@ func (self *TransactionService)AddNewTicket(data interface{}) error{
 	}
 	// ban thong bao cho chu bai do la co bai do vua dat
 	// khoi tao 1 instance cua firebase service
-	fireBaseService := firebase.NewFireBaseService(self.Redis)
-	err = fireBaseService.SendNotifyToUserOfTransaction(createdTransaction.ID, parking.OwnerId, "THÔNG BÁO", "Bạn vừa nhận được một lượt đăng ký đậu xe")
+	err = self.FireBase.SendNotifyToUserOfTransaction(createdTransaction.ID, parking.OwnerId, "THÔNG BÁO", "Bạn vừa nhận được một lượt đăng ký đậu xe")
 	if err != nil {
 		return err
 	}
@@ -209,22 +211,39 @@ func (self *TransactionService)NextStepTransaction(data interface{}) error{
 	credentialIface = self.Dao
 	credential, err := credentialIface.FindCredentialByID(fmt.Sprintf("%d",transaction.CredentialId))
 	// bắn thông báo khi thay đổi trạng thái tương ứng
-	fireBaseService := firebase.NewFireBaseService(self.Redis)
 	if input.Status == 4 {
-		err = fireBaseService.SendNotifyToUserOfTransaction(transaction.ID, parking.OwnerId, "THÔNG BÁO", fmt.Sprintf("%s đã hủy đặt bãi %s", credential.Username, parking.ParkingName))
-		//self.Redis.DelUserTokenListInTransactionTopic(transaction.ID)
+		err = self.FireBase.SendNotifyToUserOfTransaction(transaction.ID, parking.OwnerId, "THÔNG BÁO", fmt.Sprintf("%s đã hủy đặt bãi %s", credential.Username, parking.ParkingName))
+		err = self.Redis.DeleteTransactionTopic(transaction.ID)
+		if err != nil {
+			return err
+		}
 	} else if input.Status == 2{
-		err = fireBaseService.SendNotifyToUserOfTransaction(transaction.ID, transaction.CredentialId, "THÔNG BÁO", fmt.Sprintf("Yêu cầu đặt bãi %s. đã thành công", parking.ParkingName))
-	} else if input.Status == 3{
-		err = fireBaseService.SendNotifyToUserOfTransaction(transaction.ID, parking.OwnerId, "THÔNG BÁO", fmt.Sprintf("%s đã vào bãi %s", credential.Username, parking.ParkingName))
-		err = fireBaseService.SendNotifyToUserOfTransaction(transaction.ID, transaction.CredentialId,"THÔNG BÁO", fmt.Sprintf("Xe của bạn đã vào bãi %s", parking.ParkingName))
-		//tru tien user
+		err = self.FireBase.SendNotifyToUserOfTransaction(transaction.ID, transaction.CredentialId, "THÔNG BÁO", fmt.Sprintf("Yêu cầu đặt bãi %s. đã thành công", parking.ParkingName))
+		// tru diem user
+		customerService := NewCustomerService(self.Dao)
+		if err := customerService.SubPoints(transaction.CredentialId, transaction.Amount/1000); err != nil {
+			return err
+		}
+		//
 
+	} else if input.Status == 3{
+		err = self.FireBase.SendNotifyToUserOfTransaction(transaction.ID, parking.OwnerId, "THÔNG BÁO", fmt.Sprintf("%s đã vào bãi %s", credential.Username, parking.ParkingName))
+		err = self.FireBase.SendNotifyToUserOfTransaction(transaction.ID, transaction.CredentialId,"THÔNG BÁO", fmt.Sprintf("Xe của bạn đã vào bãi %s", parking.ParkingName))
 		// Tao 1 goroutine check session
 
 		//
 	} else if input.Status == 5{
-		err = fireBaseService.SendNotifyToUserOfTransaction(transaction.ID, parking.OwnerId, "THÔNG BÁO", fmt.Sprintf("%s đã chủ động lấy xe tại bãi %s", credential.Username, parking.ParkingName))
+		err = self.FireBase.SendNotifyToUserOfTransaction(transaction.ID, parking.OwnerId, "THÔNG BÁO", fmt.Sprintf("%s đã chủ động lấy xe tại bãi %s", credential.Username, parking.ParkingName))
+		err = self.Redis.DeleteTransactionTopic(transaction.ID)
+		if err != nil {
+			return err
+		}
+		// add point to owner
+		ownerService := NewOwnerService(self.Dao, self.Redis)
+		if err := ownerService.AddPoints(parking.OwnerId, transaction.Amount); err != nil {
+			return err
+		}
+		//
 	}
 	//
 	return nil
@@ -287,19 +306,37 @@ func (self *TransactionService)GetParkingIdFromTransaction(transactionId int) (i
 	return transaction.ParkingId, nil
 }
 
-func (self *TransactionService)AnalysisTransaction(data interface{})(model.AnalysisOutput, error){
+func (self *TransactionService)AnalysisTransaction(data interface{})([]model.AnalysisOutput, error){
 	var transactionIface mysql.TransactionDAO
 	transactionIface = self.Dao
 	var input model.AnalysisInput
 	err := utils.BindRawStructToRespStruct(data, &input)
 	if err != nil {
-		return model.AnalysisOutput{}, err
+		return []model.AnalysisOutput{}, err
 	}
-	output, err := transactionIface.CountFinishedAndCanceledState(input)
-	if err != nil {
-		return model.AnalysisOutput{}, err
+	// block a month
+	duration, _	:= time.ParseDuration("720h")
+	aMonth  	:= duration.Milliseconds()
+	allMonth 	:= (input.End - input.Start)/aMonth
+	var results []model.AnalysisOutput
+	var month int64
+	var startMonth int64
+	var endMonth   int64
+	for month < allMonth {
+		startMonth = startMonth + aMonth
+		endMonth = startMonth + aMonth
+		var tmp model.AnalysisInput
+		tmp.Start = startMonth
+		tmp.End = endMonth
+		output, err := transactionIface.CountFinishedAndCanceledState(tmp)
+		if err != nil {
+			return []model.AnalysisOutput{}, err
+		}
+		results = append(results, output)
+		month++
 	}
-	return output, nil
+
+	return results, nil
 }
 // neu trang thai bang 2 thi tru tien cua user
 func (self *TransactionService)ExecTransactionBusinesses(status int) error{

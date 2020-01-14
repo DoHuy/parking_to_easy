@@ -288,9 +288,7 @@ func (mid *MiddleWareService)BeforeCreateNewParkingByOwner(c *gin.Context) model
 	var newParking model.Parking
 	body := utils.GetBodyRequest(c)
 	err   = json.Unmarshal(body, &newParking)
-	fmt.Println("new parking :::", newParking)
 	if err != nil {
-		fmt.Println("ERR:   ", err)
 		return model.Middleware{StatusCode: 500, Message: "Hệ thống có sự cố"}
 	}
 	// convert data
@@ -760,13 +758,18 @@ func (mid *MiddleWareService)BeforeCreateNewTransaction(c *gin.Context) model.Mi
 	rawBody := utils.GetBodyRequest(c)
 	err = json.Unmarshal(rawBody, &transaction)
 	tranService := mid.Factory.GetTransactionService()
+	//
 	flag := tranService.CheckSelfBooking(transaction.ParkingId, payload.UserId)
-	//fmt.Println("transaction ::: in middleware", converted)
-	fmt.Println("FLAG ::: ::: ::", flag)
 	if flag != true {
 		return model.Middleware{StatusCode: 403, Message: "Bạn không được tự đặt chỗ cho bãi của chính mình"}
 	}
 	converted, err := tranService.CustomTransaction(payload, transaction)
+	// check wallet
+	customerService := mid.Factory.GetCustomerService()
+	checkedWallet := customerService.CheckWallet(converted.Amount, converted.CredentialId)
+	if checkedWallet == false {
+		return model.Middleware{StatusCode: 400, Message: "Bạn không còn đủ điểm để thực hiện giao dịch"}
+	}
 	flagCheckTime := tranService.VerifyBookingStartTime(converted.CredentialId, converted.StartTime, converted.EndTime)
 	if flagCheckTime != true {
 		return model.Middleware{StatusCode: 400, Message: "Ngày bắt đầu của session mới không được trước ngày kết thúc của session trc đó"}

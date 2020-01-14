@@ -6,6 +6,7 @@ import (
 	"firebase.google.com/go/messaging"
 	"fmt"
 	"github.com/DoHuy/parking_to_easy/redis"
+	"google.golang.org/api/option"
 	"log"
 )
 
@@ -15,27 +16,27 @@ type FireBaseService struct {
 	App 				*firebase.App
 }
 
-//func initializeAppWithServiceAccount() *firebase.App {
-//	opt := option.WithCredentialsFile("service-account-credential.json")
-//	app, err := firebase.NewApp(context.Background(), nil, opt)
-//	if err != nil {
-//		log.Fatalf("Khởi tạo firebase bị lỗi: %v\n", err)
-//	}
-//	return app
-//}
-
-func initializeAppDefault() *firebase.App {
-	// [START initialize_app_default_golang]
-	app, err := firebase.NewApp(context.Background(), nil)
+func initializeAppWithServiceAccount() *firebase.App {
+	opt := option.WithCredentialsFile("service-account-credential.json")
+	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
-		log.Fatalf("error initializing app: %v\n", err)
+		log.Fatalf("Khởi tạo firebase bị lỗi: %v\n", err)
 	}
-	// [END initialize_app_default_golang]
-
 	return app
 }
+
+//func initializeAppDefault() *firebase.App {
+//	// [START initialize_app_default_golang]
+//	app, err := firebase.NewApp(context.Background(), nil)
+//	if err != nil {
+//		log.Fatalf("error initializing app: %v\n", err)
+//	}
+//	// [END initialize_app_default_golang]
+//
+//	return app
+//}
 func NewFireBaseService(redis *redis.Redis) *FireBaseService{
-	app := initializeAppDefault()
+	app := initializeAppWithServiceAccount()
 	return &FireBaseService{
 		Redis: redis,
 		App: app,

@@ -148,3 +148,27 @@ func (this *Redis)DelUserTokenListInParkingTopic(transactionId int, userId int) 
 	}
 	return nil
 }
+
+func (this *Redis)DeleteTransactionTopic(transactionId int) error{
+	conn := this.pool.Get()
+	var redisConfig model.Redis
+	redisConfig = config.GetConfigRedis()
+	topicName := fmt.Sprintf("%s.%d", redisConfig.Topic[1], transactionId)
+	_, err := conn.Do("DEL", topicName)
+	if err != nil {
+		return fmt.Errorf("Lỗi xóa dữ liệu trong redis %s", err.Error())
+	}
+	return nil
+}
+
+func (this *Redis)DeleteParkingTopic(parkingId int) error{
+	conn := this.pool.Get()
+	var redisConfig model.Redis
+	redisConfig = config.GetConfigRedis()
+	topicName := fmt.Sprintf("%s.%d", redisConfig.Topic[2], parkingId)
+	_, err := conn.Do("DEL", topicName)
+	if err != nil {
+		return fmt.Errorf("Lỗi xóa dữ liệu trong redis %s", err.Error())
+	}
+	return nil
+}

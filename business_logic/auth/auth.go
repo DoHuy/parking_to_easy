@@ -15,8 +15,7 @@ type Auth struct {
 }
 
 // singleton init a instance redis
-func NewAuth() *Auth {
-	redis := redis2.NewRedis()
+func NewAuth(redis *redis2.Redis) *Auth {
 	return &Auth{Redis: redis,}
 }
 

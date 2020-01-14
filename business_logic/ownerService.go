@@ -1,19 +1,27 @@
 package business_logic
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/DoHuy/parking_to_easy/firebase"
 	"github.com/DoHuy/parking_to_easy/model"
 	"github.com/DoHuy/parking_to_easy/mysql"
+	"github.com/DoHuy/parking_to_easy/redis"
 	"github.com/DoHuy/parking_to_easy/utils"
 )
 
 type OwnerService struct {
-	Dao	*mysql.DAO
+	Dao			*mysql.DAO
+	Redis		*redis.Redis
+	FireBase	*firebase.FireBaseService
 }
 
-func NewOwnerService(dao *mysql.DAO) *OwnerService{
+func NewOwnerService(dao *mysql.DAO, redis *redis.Redis) *OwnerService{
+	firebaseService := firebase.NewFireBaseService(redis)
 	return &OwnerService{
 		Dao: dao,
+		Redis: redis,
+		FireBase: firebaseService,
 	}
 }
 
@@ -70,5 +78,53 @@ func (self *OwnerService)DisableOwner(data interface{}) error{
 	if err := ownerIface.ModifyOwner(input); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (this *OwnerService)AddPoints(credentialId, points int) error{
+	var credentialIface mysql.CredentialDAO
+	credentialIface = this.Dao
+	err := credentialIface.ModifyCredential("ADD", points, credentialId)
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
+func (this *OwnerService)ShareParking(input interface{}) error{
+	var parking model.Parking
+	raw,_ := json.Marshal(input)
+	err := json.Unmarshal(raw, &parking)
+	fmt.Println("PARKING:::", parking)
+	if err != nil {
+		return err
+	}
+	var parkingIface mysql.ParkingDAO
+	parkingIface = this.Dao
+	err = parkingIface.CreateNewParkingOfOwner(parking)
+	if err != nil {
+		return err
+	}
+	// tao cau truc luu tru trong redis
+	park, err := parkingIface.FindParkingByCreatedAt(parking.CreatedAt)
+	if err != nil {
+		return err
+	}
+	// lay toan bo token cua owner
+	var userDeviceIface mysql.DeviceDAO
+	userDeviceIface = this.Dao
+	devices, _ := userDeviceIface.FindTokensOfUser(park.OwnerId)
+	var tokens []string
+	for _, device := range devices {
+		tokens = append(tokens, device.DeviceToken)
+	}
+	// luu lai tokens trong redis cho viec gui thong bao
+	err = this.Redis.SetTokenListParking(park.ID, park.OwnerId, tokens)
+	if err != nil {
+		return err
+	}
+	// gui thong bao toi admin co chia se diem dau moi
+	//
 	return nil
 }
