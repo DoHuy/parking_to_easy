@@ -84,6 +84,19 @@ func (self *ParkingService)CheckExistedLocation(longitude, latitude string) bool
 	return true
 }
 
+func (self *ParkingService)AddUnknownParkingSpot(input interface{}) error {
+	var parkingByAdmin model.NewParkingByAdmin
+	err := utils.BindRawStructToRespStruct(input, &parkingByAdmin)
+	if err != nil {
+		return err
+	}
+	var parkingIface mysql.ParkingDAO
+	parkingIface = self.Dao
+	if err := parkingIface.CreateNewParkingByAdmin(parkingByAdmin); err != nil {
+		return err
+	}
+	return nil
+}
 //func (self *ParkingService)RecommendSuitableParking(location model.Location) ([]model.Parking, error){
 //
 //}

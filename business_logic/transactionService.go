@@ -212,7 +212,7 @@ func (self *TransactionService)NextStepTransaction(data interface{}) error{
 	credential, err := credentialIface.FindCredentialByID(fmt.Sprintf("%d",transaction.CredentialId))
 	// bắn thông báo khi thay đổi trạng thái tương ứng
 	if input.Status == 4 {
-		err = self.FireBase.SendNotifyToUserOfTransaction(transaction.ID, parking.OwnerId, "THÔNG BÁO", fmt.Sprintf("%s đã hủy đặt bãi %s", credential.Username, parking.ParkingName))
+		//err = self.FireBase.SendNotifyToUserOfTransaction(transaction.ID, parking.OwnerId, "THÔNG BÁO", fmt.Sprintf("%s đã hủy đặt bãi %s", credential.Username, parking.ParkingName))
 		err = self.FireBase.SendNotifyToUserOfTransaction(transaction.ID, transaction.CredentialId, "THÔNG BÁO", fmt.Sprintf("%s Xin lỗi, điểm đậu tại %s đẫ hết", credential.Username, parking.ParkingName))
 		err = self.Redis.DeleteTransactionTopic(transaction.ID)
 		if err != nil {

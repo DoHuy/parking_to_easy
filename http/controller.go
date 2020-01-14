@@ -41,7 +41,6 @@ func (con *ControllingService)Options(c *gin.Context) {
 // Bai dau xe
 func (con *ControllingService) CreateNewParkingByAdmin(c *gin.Context) {
 	// Before create
-	c.Header("Access-Control-Allow-Origin", "*")
 	var middle model.Middleware
 	middle = con.Middleware.BeforeCreateNewParkingByAdmin(c)
 	if middle.StatusCode != 0 {
@@ -49,11 +48,8 @@ func (con *ControllingService) CreateNewParkingByAdmin(c *gin.Context) {
 		c.JSON(middle.StatusCode, model.ErrorMessage{Message: middle.Message})
 		return
 	}
-	// implement
-	var parkingDAOIface mysql.ParkingDAO
-	parkingDAOIface = con.Factory.Dao
-	//fmt.Println("middle.Datamiddle.Data", middle.Data)
-	err := parkingDAOIface.CreateNewParkingByAdmin(middle.Data)
+	parkingService := con.Factory.GetParkingService()
+	err := parkingService.AddUnknownParkingSpot(middle.Data)
 	if err != nil {
 		fmt.Println("ERRR::::::::", err)
 		c.JSON(http.StatusInternalServerError, model.ErrorMessage{
