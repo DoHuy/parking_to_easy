@@ -12,6 +12,10 @@
 ### Biểu đồ Usecase
 ![Usecase Diagram](./phantich_thietke/use-case-tong-quan.png)
 
+### Thiết kế cơ sở dữ liệu
+![Database](./phantich_thietke/design_Db.png)
+### Kiến trúc hệ thống
+![Architecture](./phantich_thietke/architecture.png)
 ### Nhóm `apis` theo tính năng
 
 Code | Quyền |Chức năng | Mô tả | APIs
