@@ -23,7 +23,7 @@ services:
   api:
     build: .
     ports:
-      - "8086:8080"
+      - "8086:8085"
     networks:
       - backend
     depends_on: #cho db start trc

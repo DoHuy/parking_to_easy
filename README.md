@@ -13,15 +13,11 @@
 ## Thiết kế hệ thống
 ### Biểu đồ Usecase
 ![Usecase Diagram](./phantich_thietke/use-case-tong-quan.png)
-
-### Biểu đồ use-case tổng quan 
+ 
+### Thiết kế cơ sở dữ liệu
 ![Design db](./phantich_thietke/architecturesss.png)
-
-### Biểu đồ kiến trúc hệ thống
-![Architecture](./phantich_thietke/Screenshot%20from%202020-01-15%2015-26-54.png)
-
-###
-
+### Kiến trúc hệ thống
+![Architecture](./phantich_thietke/architecture.png)
 ### Nhóm `apis` theo tính năng
 
 Code | Quyền |Chức năng | Mô tả | APIs

@@ -18,7 +18,7 @@ FROM alpine:latest
 
 RUN mkdir /app
 WORKDIR /app
-
+ENV GOOGLE_APPLICATION_CREDENTIALS=/app/go/src/github.com/DoHuy/parking-to-easy/firebase/service-account-credential.json
 #COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /go/src/github.com/DoHuy/parking-to-easy/  ./
 RUN ls -la

@@ -9,7 +9,7 @@ import (
 
 type ParkingDAO interface {
 	CreateNewParkingOfOwner(newParking model.Parking)  error
-	CreateNewParkingByAdmin(newParking interface{}) error
+	CreateNewParkingByAdmin(newParking model.NewParkingByAdmin) error
 	ChangStatusParking(input model.VerifyingParkingInput)  error
 	FindParkingByID(id string) (model.Parking, error)
 	FindParkingByOwnerId(ownerId string) (model.Owner, error)
@@ -32,13 +32,9 @@ func (db *DAO) CreateNewParkingOfOwner(newParking model.Parking)  error{
 	return nil
 }
 
-func (db *DAO) CreateNewParkingByAdmin(newParking interface{}) error {
-	//var parking model.Parking
-	var parking model.NewParkingByAdmin
-	raw,_ := json.Marshal(newParking)
-	err := json.Unmarshal(raw, &parking)
-	fmt.Println("Parking::::: ", parking)
-	err  = db.connection.Table("parkings").Create(&parking).Error
+func (db *DAO) CreateNewParkingByAdmin(newParking model.NewParkingByAdmin) error {
+
+	err := db.connection.Table("parkings").Create(&newParking).Error
 	if err != nil {
 		panic(err.Error())
 		return err

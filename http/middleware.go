@@ -196,6 +196,7 @@ func (mid *MiddleWareService)BeforeCreateNewParkingByAdmin(c *gin.Context) model
 	// get body
 	var newParking model.NewParkingByAdmin
 	body := utils.GetBodyRequest(c)
+	fmt.Println(string(body))
 	err   = json.Unmarshal(body, &newParking)
 	fmt.Println("new PArking :::", newParking)
 	if err != nil {
