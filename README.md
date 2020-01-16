@@ -1,6 +1,8 @@
 # Parking_to_easy
 ### Hỗ trợ tìm kiếm và chia sẻ bãi đỗ xe thông minh
-
+###Đặt vấn đề
+. Bãi đỗ xe trong khu vực nội đô bố trí chưa hợp lý và còn thiếu
+. Hà nội mới chỉ đáp ứng được 8 - 10 % nhu cầu đỗ xe của người dân, đất dành cho các bãi đỗ xe chỉ chiếm khoảng 0.12 % tổng diện tích khu vực, nhiều bãi đất trống không sử dụng gì gây sự lãng phí trong khi bãi đỗ xe thiếu
 ## Công  nghệ phát triển sản phẩm
 * Go 1.9 or newer is required (gin/gonic frameworks)
 * Redis
@@ -11,6 +13,14 @@
 ## Thiết kế hệ thống
 ### Biểu đồ Usecase
 ![Usecase Diagram](./phantich_thietke/use-case-tong-quan.png)
+
+### Biểu đồ use-case tổng quan 
+![Design db](./phantich_thietke/architecturesss.png)
+
+### Biểu đồ kiến trúc hệ thống
+![Architecture](./phantich_thietke/Screenshot%20from%202020-01-15%2015-26-54.png)
+
+###
 
 ### Nhóm `apis` theo tính năng
 

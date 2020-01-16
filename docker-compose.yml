@@ -7,8 +7,6 @@ services:
     container_name: database
     ports:
       - "8881:3306"
-    volumes:
-      - ./resource/migration:/var/lib/mysql
     environment:
       MYSQL_DATABASE: parkings
       MYSQL_USER: root
@@ -25,7 +23,7 @@ services:
   api:
     build: .
     ports:
-      - "8085:8080"
+      - "8086:8080"
     networks:
       - backend
     depends_on: #cho db start trc

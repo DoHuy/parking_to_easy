@@ -70,24 +70,44 @@ type Middleware struct {
 	Data		interface{}	`json:"data"`
 }
 
-// schema create parking by admin
 type NewParkingByAdmin struct {
-	ParkingName			string		`json:"parkingName,omitempty"`
-	Properties			string		`json:"properties,omitempty"`
-	Address				string		`json:"address,omitempty"`
-	KindOf				string		`json:"kindOf,omitempty"`
-	ParkingImages 		string		`json:"parkingImages,omitempty"`
-	Payment				string		`json:"payment,omitempty"`
-	Longitude			string		`json:"longitude,omitempty"`
-	Latitude			string		`json:"latitude,omitempty"`
-	Capacity			string		`json:"capacity,omitempty"`
-	BlockAmount			string			`json:"blockAmount,omitempty"`
-	CertificateOfLand	string		`json:"certificateOfland,omitempty"`
-	Describe			string		`json:"describe,omitempty"`
-	Status				string		`json:"status,omitempty"`
-	OwnerId				int			`json:"ownerId,omitempty"`
-	CreatedAt			string		`json:"created_at,omitempty"`
+	ParkingName			string		`gorm:"column:parkingName" json:"parkingName,omitempty"`
+	Properties			string		`gorm:"column:properties" json:"properties,omitempty"`
+	Address				string		`gorm:"column:address" json:"address,omitempty"`
+	KindOf				string		`gorm:"column:kindOf" json:"kindOf,omitempty"`
+	ParkingImages 		string		`gorm:"column:parkingImages" json:"parkingImages,omitempty"`
+	Payment				string		`gorm:"column:payment" json:"payment,omitempty"`
+	Longitude			string		`gorm:"column:longitude" json:"longitude,omitempty"`
+	Latitude			string		`gorm:"column:latitude" json:"latitude,omitempty"`
+	Capacity			string		`gorm:"column:capacity" json:"capacity,omitempty"`
+	BlockAmount			string		`gorm:"column:blockAmount" json:"blockAmount,omitempty"`
+	OwnerId				int			`gorm:"column:ownerId" json:"ownerId,omitempty"`
+	CertificateOfLand	string		`gorm:"column:certificateOfland" json:"certificateOfland"`
+	CreatedAt			string		`gorm:"column:created_at" json:"created_at,omitempty"`
+	ModifiedAt 			string		`gorm:"column:modified_at" json:"modified_at"`
+	DeletedAt 			string		`gorm:"column:deleted_at" json:"deleted_at,omitempty"`
+	Describe			string		`gorm:"column:describe" json:"describe"`
+	Status				string		`gorm:"column:status" json:"status,omitempty"`
 }
+
+// schema create parking by admin
+//type NewParkingByAdmin struct {
+//	ParkingName			string		`json:"parkingName,omitempty"`
+//	Properties			string		`json:"properties,omitempty"`
+//	Address				string		`json:"address,omitempty"`
+//	KindOf				string		`json:"kindOf,omitempty"`
+//	ParkingImages 		string		`json:"parkingImages,omitempty"`
+//	Payment				string		`json:"payment,omitempty"`
+//	Longitude			string		`json:"longitude,omitempty"`
+//	Latitude			string		`json:"latitude,omitempty"`
+//	Capacity			string		`json:"capacity,omitempty"`
+//	BlockAmount			string		`json:"blockAmount,omitempty"`
+//	CertificateOfLand	string		`json:"certificateOfland,omitempty"`
+//	Describe			string		`json:"describe,omitempty"`
+//	Status				string		`json:"status,omitempty"`
+//	OwnerId				int			`json:"ownerId,omitempty"`
+//	CreatedAt			string		`json:"created_at,omitempty"`
+//}
 //
 
 type SuccessMessage struct {

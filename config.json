@@ -3,16 +3,16 @@
     "username": "root",
     "password": "123",
     "database_name": "parkings",
-    "address": "localhost:8881"
+    "address": "45.118.145.149:8881"
   },
   "secret_key": "abcdef123456789",
   "max_uploaded_file_size":  10000000,
   "environment": {
-    "hostname": "192.168.1.191",
-    "port": "8085"
+    "hostname": "192.168.31.142",
+    "port": "8089"
   },
   "redis": {
-    "address": "localhost:8882",
+    "address": "45.118.145.149:8882",
     "topic": ["JWT", "TRANSACTION", "PARKING"],
     "networks": "tcp"
   },
