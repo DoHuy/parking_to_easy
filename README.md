@@ -1,6 +1,6 @@
 # Parking_to_easy
 ### Hỗ trợ tìm kiếm và chia sẻ bãi đỗ xe thông minh
-###Đặt vấn đề
+### Đặt vấn đề
 . Bãi đỗ xe trong khu vực nội đô bố trí chưa hợp lý và còn thiếu
 . Hà nội mới chỉ đáp ứng được 8 - 10 % nhu cầu đỗ xe của người dân, đất dành cho các bãi đỗ xe chỉ chiếm khoảng 0.12 % tổng diện tích khu vực, nhiều bãi đất trống không sử dụng gì gây sự lãng phí trong khi bãi đỗ xe thiếu
 ## Công  nghệ phát triển sản phẩm
@@ -17,7 +17,7 @@
 ### Thiết kế cơ sở dữ liệu
 ![Design db](./phantich_thietke/architecturesss.png)
 ### Kiến trúc hệ thống
-![Architecture](https://drive.google.com/file/d/1fcjoQ232pUq1NcyDDvpVB_hKAKRAWQMP/view?usp=drivesdk)
+![Architecture](./phantich_thietke/Untitled Diagram.png)
 ### Nhóm `apis` theo tính năng
 
 Code | Quyền |Chức năng | Mô tả | APIs
