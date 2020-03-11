@@ -17,7 +17,7 @@
 ### Thiết kế cơ sở dữ liệu
 ![Design db](./phantich_thietke/architecturesss.png)
 ### Kiến trúc hệ thống
-![Architecture](./phantich_thietke/architecture.png)
+![Architecture](https://drive.google.com/file/d/1fcjoQ232pUq1NcyDDvpVB_hKAKRAWQMP/view?usp=drivesdk)
 ### Nhóm `apis` theo tính năng
 
 Code | Quyền |Chức năng | Mô tả | APIs
