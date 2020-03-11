@@ -17,7 +17,7 @@
 ### Thiết kế cơ sở dữ liệu
 ![Design db](./phantich_thietke/architecturesss.png)
 ### Kiến trúc hệ thống
-![Architecture](./phantich_thietke/Untitled Diagram.png)
+![Architecture](./phantich_thietke/Untitled%20Diagram.png)
 ### Nhóm `apis` theo tính năng
 
 Code | Quyền |Chức năng | Mô tả | APIs
